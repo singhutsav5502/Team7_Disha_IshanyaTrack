@@ -14,6 +14,29 @@ export const fetchEmployees = async () => {
   }
 };
 
+
+export const fetchEmployeeImage = async (employeeId: string): Promise<string | null> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/get_employee_image`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id: employeeId })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch employee image: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.imageUrl || null;
+  } catch (error) {
+    console.error('Error fetching employee image:', error);
+    return null;
+  }
+};
+
 // Student-related API calls
 export const fetchStudents = async () => {
   try {
@@ -40,5 +63,27 @@ export const fetchEducatorMapping = async () => {
     throw error;
   }
 }
+
+export const fetchStudentImage = async (studentId: string): Promise<string | null> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/get_student_image`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id: studentId })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch student image: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data.imageUrl || null;
+  } catch (error) {
+    console.error('Error fetching student image:', error);
+    return null;
+  }
+};
 
 // Program-related API calls
