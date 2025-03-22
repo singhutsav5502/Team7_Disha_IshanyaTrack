@@ -73,3 +73,31 @@ def get_student_by_id():
 
     except mysql.connector.Error as err:
         return jsonify({'error': str(err)}), 500
+
+@app.route('/get_employee_by_id', methods=['POST'])
+def get_employee_by_id():
+    data = request.json
+    employee_id = data.get('Employee_ID')
+
+    if not employee_id:
+        return jsonify({'error': 'Missing Employee ID'}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query = "SELECT * FROM Employees WHERE Employee_ID = %s"
+        cursor.execute(query, (employee_id,))
+        employee = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        if employee:
+            return jsonify(employee)
+        else:
+            return jsonify({'error': 'Employee not found'}), 404
+
+    except mysql.connector.Error as err:
+        return jsonify({'error': str(err)}), 500
+
