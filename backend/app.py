@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from flask import CORS
+from flask_cors import CORS
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -21,3 +21,5 @@ app.register_blueprint(employee.employee_btp)
 def home():
     return render_template('index.html')
 
+if __name__ == "__main__":
+    app.run(debug=True)
