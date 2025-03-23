@@ -18,7 +18,7 @@ interface StudentProfileFormProps {
   ) => void;
   isEditing: boolean;
   canEdit: boolean;
-  userType: number;
+  accessType: number;
   onUpdate: () => void;
 }
 
@@ -27,7 +27,7 @@ const StudentProfileForm = ({
   handleInputChange,
   isEditing,
   canEdit,
-  userType,
+  accessType,
   onUpdate,
 }: StudentProfileFormProps) => {
   // Custom handler for Select component
@@ -48,16 +48,16 @@ const StudentProfileForm = ({
     }
   };
 
-  const isStudent = userType === USER_ROLES.STUDENT;
+  const isStudent = accessType  === USER_ROLES.STUDENT;
 
   // Function to determine if a field is editable by the current user
   const isFieldEditable = (fieldName: string) => {
     if (!isEditing) return false;
-    if (canEdit) return true;
+    if (!isStudent && canEdit && accessType>USER_ROLES.EDUCATOR) return true;
     if (isStudent && studentEditableFields.includes(fieldName)) return true;
     return false;
   };
-
+  canEdit = canEdit &&  (!isStudent && accessType>USER_ROLES.EDUCATOR);
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>

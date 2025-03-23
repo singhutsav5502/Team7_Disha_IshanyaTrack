@@ -29,7 +29,7 @@ function App() {
       <Route
         path="/"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole={USER_ROLES.STUDENT}>
             <>
               <Navbar />
               <DashboardPage />
@@ -41,7 +41,7 @@ function App() {
       <Route
         path="/profile/:id"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole={USER_ROLES.STUDENT}>
             <>
               <Navbar />
               <ProfilePage />
