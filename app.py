@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 import mysql.connector
+import json
 
 from dotenv import load_dotenv
 
@@ -7,6 +9,7 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'fallback-secret')
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Database Configuration
 db_config = {
@@ -110,16 +113,15 @@ def get_user_type():
     try:
         data = request.get_json()
         user_id = data.get('Id')
-        password = data.get('pwd')
 
-        if not user_id or not password:
-            return jsonify({'error': 'Missing ID or password'}), 400
+        if not user_id:
+            return jsonify({'error': 'Missing ID'}), 400
 
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
-        query = "SELECT type FROM auth WHERE ID = %s AND pwd = %s"
-        cursor.execute(query, (user_id, password))
+        query = "SELECT type FROM auth WHERE ID = %s"
+        cursor.execute(query, (user_id,))
         result = cursor.fetchone()
 
         cursor.close()
@@ -128,11 +130,12 @@ def get_user_type():
         if result:
             return jsonify({'type': result['type']}), 200
         else:
-            return jsonify({'error': 'Invalid credentials'}), 401
+            return jsonify({'error': 'User ID not found'}), 404
 
     except Exception as e:
         print("Error in /get-user-type:", e)
         return jsonify({'error': 'Server error'}), 500
+
 
 @app.route('/employees', methods=['GET'])
 def get_employees():
