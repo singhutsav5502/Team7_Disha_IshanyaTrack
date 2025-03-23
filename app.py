@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 import mysql.connector
+import json
 
 from dotenv import load_dotenv
 
@@ -7,6 +9,7 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'fallback-secret')
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Database Configuration
 db_config = {
