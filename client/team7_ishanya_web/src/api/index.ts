@@ -1,10 +1,10 @@
 import { USER_ROLES } from "../types";
 
-const API_BASE_URL = "/";
+const API_BASE_URL = "https://team7.pythonanywhere.com";
 
 export const login = async (Id: string, pwd: string) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/get-user-type`, {
+    const response = await fetch(`${API_BASE_URL}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -304,6 +304,70 @@ export const addStudentToProgram = async (programId: string, studentId: string) 
     throw error;
   }
 };
+
+export const create_new_educator = async (educatorData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/create_new_educator`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(educatorData)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create educator');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating educator:", error);
+    throw error;
+  }
+};
+export const create_new_student = async (studentData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/create_new_student`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(studentData)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create student');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating student:", error);
+    throw error;
+  }
+};
+export const create_new_employee = async (employeeData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/create_new_employee`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(employeeData)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create employee');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating employee:", error);
+    throw error;
+  }
+};
 // Dummy data generator for dashboard stats
 const getDummyDashboardData = () => {
   return {
@@ -338,11 +402,11 @@ const simulateProfileUpdate = (id: string, userType: number, formData: any) => {
 
 
 const getDummyUser = () => {
-  return { 'Authenticated': true, 'Type': 3 };
+  return { 'Authenticated': true, 'Type':3 };
 }
 const getDummyUserType = () => {
   // Default role
-  const userType = 3;
+  const userType =3;
 
   return { userType };
 };
@@ -472,7 +536,7 @@ const getDummyEducatorMapping = () => {
 };
 // Dummy data generator for profile data
 const getDummyProfileData = (id: string, userType: number) => {
-  if (userType === USER_ROLES.STUDENT) {
+  if (userType == USER_ROLES.STUDENT) {
     return {
       S_ID: id,
       Fname: "Rahul",

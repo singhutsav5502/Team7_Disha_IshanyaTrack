@@ -9,7 +9,7 @@ import { fetchDashboardData } from "../api";
 
 const DashboardPage = () => {
   const navigate = useNavigate();
-  const userType = useSelector(getUserType);
+  const accessType = useSelector(getUserType);
   const userId = useSelector(getUserId);
   const [stats, setStats] = useState({
     totalStudents: 0,
@@ -41,7 +41,7 @@ const DashboardPage = () => {
   }, []);
 
   const renderAdminOptions = () => {
-    if (userType === USER_ROLES.ADMIN || userType === USER_ROLES.SUPERUSER) {
+    if (accessType === USER_ROLES.ADMIN || accessType === USER_ROLES.SUPERUSER) {
       return (
         <div className="mt-8">
           <h3 className="text-xl font-bold mb-4">Administrative Actions</h3>
@@ -73,8 +73,8 @@ const DashboardPage = () => {
 
   const renderEducatorOptions = () => {
     if (
-      userType &&
-      (userType === USER_ROLES.EDUCATOR || userType >= USER_ROLES.ADMIN)
+      accessType &&
+      (accessType === USER_ROLES.EDUCATOR || accessType >= USER_ROLES.ADMIN)
     ) {
       return (
         <div className="mt-8">
@@ -100,7 +100,7 @@ const DashboardPage = () => {
   };
 
   const renderStudentOptions = () => {
-    if (userType === USER_ROLES.STUDENT) {
+    if (accessType === USER_ROLES.STUDENT) {
       return (
         <div className="mt-8">
           <h3 className="text-xl font-bold mb-4">Student Actions</h3>

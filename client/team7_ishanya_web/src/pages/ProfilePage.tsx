@@ -15,23 +15,8 @@ const ProfilePage = () => {
   const { id } = useParams<{
     id: string;
   }>();
-  const [userType,setUserType] = useState<number>(null);
-  useEffect(() => {
-    const getUserTypeData = async () => {
-      if (!id) return;
-      
-      try {
-        const data = await fetchUserType(id);
-        setUserType(data.userType);
-      } catch (err) {
-        console.error("Error getting user type:", err);
-        // Fallback to default user type
-        setUserType(0); // STUDENT as default
-      }
-    };
-    
-    getUserTypeData();
-  }, [id]);
+  const [userType, setUserType] = useState<number>(null);
+
   const navigate = useNavigate();
 
   const access_type = useSelector(getUserType);
@@ -56,17 +41,72 @@ const ProfilePage = () => {
       }
       return false;
     }
+    if (access_type === USER_ROLES.STUDENT && access_id === id) return true;
     return false;
   };
 
-  const canView = () => {
-    if (access_type === null || !access_id) return false;
+  const [userTypeLoading, setUserTypeLoading] = useState(true);
 
+  useEffect(() => {
+    const getUserTypeData = async () => {
+      if (!id) {
+        setUserTypeLoading(false);
+        return;
+      }
+  
+      try {
+        const data = await fetchUserType(id);
+        setUserType(data.userType);
+      } catch (err) {
+        console.error("Error getting user type:", err);
+        // Fallback to default user type
+        setUserType(0); // STUDENT as default
+      } finally {
+        setUserTypeLoading(false);
+      }
+    };
+  
+    getUserTypeData();
+  }, [id]);
+  
+  useEffect(() => {
+    // Only run this effect if userType is loaded (not in loading state)
+    if (userTypeLoading) {
+      return;
+    }
+  
+    const loadProfileData = async () => {
+      if (!id) return;
+  
+      setLoading(true);
+      try {
+        const data = await fetchProfileData(id, userType);
+        setProfileData(data);
+        setFormData(data);
+      } catch (err) {
+        setError(err.message || "Failed to fetch profile data");
+        toast.error(`Failed to fetch profile data with error: ${err}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    loadProfileData();
+  }, [id, userType, userTypeLoading]);
+  
+  const canView = () => {
+    // If still loading data, don't make a decision yet
+    if (userTypeLoading || loading) {
+      return true; // Return true to prevent premature navigation
+    }
+  
+    if (access_type === null || !access_id) return false;
+  
     if (access_type === USER_ROLES.SUPERUSER) return true;
     if (access_type === USER_ROLES.ADMIN) return true;
     if (access_type === USER_ROLES.EDUCATOR) {
       if (
-        (userType == 0 && profileData?.Primary_E_ID === access_id) ||
+        (userType === 0 && profileData?.Primary_E_ID === access_id) ||
         profileData?.Secondary_E_ID === access_id
       ) {
         return true;
@@ -78,26 +118,14 @@ const ProfilePage = () => {
     }
     return false;
   };
-
+  
+  // Use a separate effect for navigation to avoid race conditions
   useEffect(() => {
-    const loadProfileData = async () => {
-      if (!id) return;
-
-      setLoading(true);
-      try {
-        const data = await fetchProfileData(id, userType);
-        setProfileData(data);
-        setFormData(data);
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch profile data");
-        toast.error(`Failed to fetch profile data with error: ${err}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProfileData();
-  }, [id]);
+    // Only check authorization after all data is loaded
+    if (!userTypeLoading && !loading && !canView()) {
+      navigate("/Unauthorized");
+    }
+  }, [userTypeLoading, loading, navigate]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -105,7 +133,6 @@ const ProfilePage = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
   const handleSubmit = async () => {
     setLoading(true);
     try {
@@ -142,23 +169,17 @@ const ProfilePage = () => {
   }
 
   if (error || !profileData) {
-    toast.error(error||"Profile not found");
+    toast.error(error || "Profile not found");
     navigate("/");
-    return (<></>)
+    return <></>;
   }
-
-  if (!canView()) {
-    navigate("/Unauthorized");
-    return (<></>)
-  }
-  
 
   return (
     <div className="container mx-auto py-10 px-10">
       <ProfileHeader
         profileData={profileData}
-        isStudent={userType==USER_ROLES.STUDENT}
-        id = {id}
+        isStudent={userType == USER_ROLES.STUDENT}
+        id={id}
       />
 
       <div className="divider my-8"></div>
@@ -167,11 +188,13 @@ const ProfilePage = () => {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">Profile Information</h2>
           {canEdit() && (
-            <button 
-              className="btn btn-primary" 
+            <button
+              className="btn btn-primary"
               onClick={() => setIsEditing(!isEditing)}
             >
-              {isEditing ? "Cancel Editing" : (
+              {isEditing ? (
+                "Cancel Editing"
+              ) : (
                 <>
                   <FiEdit className="mr-2" />
                   Edit Profile
@@ -181,23 +204,25 @@ const ProfilePage = () => {
           )}
         </div>
 
-        <div className={`card bg-base-100 shadow-xl ${isEditing ? "bg-blue-50" : ""}`}>
+        <div
+          className={`card bg-base-100 shadow-xl ${isEditing ? "bg-blue-50" : ""}`}
+        >
           <div className="card-body">
-            {userType===USER_ROLES.STUDENT ? (
+            {userType === USER_ROLES.STUDENT ? (
               <StudentProfileForm
                 formData={formData}
                 handleInputChange={handleInputChange}
                 isEditing={isEditing}
                 canEdit={canEdit()}
-                onUpdate = {handleSubmit}
-                userType={access_type as number}
+                onUpdate={handleSubmit}
+                accessType={access_type as number}
               />
             ) : (
               <EmployeeProfileForm
                 formData={formData}
                 handleInputChange={handleInputChange}
                 isEditing={isEditing}
-                onUpdate = {handleSubmit}
+                onUpdate={handleSubmit}
                 canEdit={canEdit()}
               />
             )}
