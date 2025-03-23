@@ -3,34 +3,27 @@ import { FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Student, USER_ROLES } from "../types";
-import {toast} from "react-toastify";
-import { getUserType, getUserId } from "../store/slices/authSlice";
+import { toast } from "react-toastify";
+import {
+  getUserType,
+  getUserId,
+  getProgramMapping,
+} from "../store/slices/authSlice";
 import { fetchEducatorMapping, fetchStudents } from "../api";
 
-interface EducatorMapping {
-  [key: string]: string;
-}
-
 const ManageStudentsPage: React.FC = () => {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
+  const [students, setStudents] = useState<any[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [educatorMapping, setEducatorMapping] = useState<EducatorMapping>({});
-  const [filters, setFilters] = useState<Partial<Student>>({});
-  const [sortField, setSortField] = useState<keyof Student>("S_ID");
+  const [educatorMapping, setEducatorMapping] = useState<any>({});
+  const [filters, setFilters] = useState<any>({});
+  const [sortField, setSortField] = useState<any>("S_ID");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const navigate = useNavigate();
   const userType = useSelector(getUserType);
   const userId = useSelector(getUserId);
-
-  // TODO: FETCH PROGRAM ID TO NAME MAPPING
-  const PROGRAMS = [
-    { id: 1, name: "Early Intervention" },
-    { id: 2, name: "Special Education" },
-    { id: 3, name: "Vocational Training" },
-    { id: 4, name: "Therapy Services" },
-  ];
-  
+  const PROGRAMS = useSelector(getProgramMapping);
+  console.log(PROGRAMS);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -55,8 +48,7 @@ const ManageStudentsPage: React.FC = () => {
 
         setLoading(false);
       } catch (error) {
-        toast.error(`Failed to fetch data with error: ${error}`,
-        );
+        toast.error(`Failed to fetch data with error: ${error}`);
         setLoading(false);
       }
     };
@@ -102,7 +94,7 @@ const ManageStudentsPage: React.FC = () => {
   };
 
   const navigateToProfile = (studentId: string) => {
-    navigate(`/profile/${studentId}`, { state: { type: USER_ROLES.STUDENT } });
+    navigate(`/profile/${studentId}`);
   };
 
   if (loading) {
@@ -188,7 +180,9 @@ const ManageStudentsPage: React.FC = () => {
                   <div className="flex items-center">
                     ID
                     {sortField === "S_ID" && (
-                      <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </div>
                 </th>
@@ -199,7 +193,9 @@ const ManageStudentsPage: React.FC = () => {
                   <div className="flex items-center">
                     Name
                     {sortField === "Fname" && (
-                      <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </div>
                 </th>
@@ -210,7 +206,9 @@ const ManageStudentsPage: React.FC = () => {
                   <div className="flex items-center">
                     Program
                     {sortField === "Program_ID" && (
-                      <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </div>
                 </th>
@@ -221,7 +219,9 @@ const ManageStudentsPage: React.FC = () => {
                   <div className="flex items-center">
                     Status
                     {sortField === "Status" && (
-                      <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </div>
                 </th>
@@ -232,7 +232,9 @@ const ManageStudentsPage: React.FC = () => {
                   <div className="flex items-center">
                     Primary Educator
                     {sortField === "Primary_E_ID" && (
-                      <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </div>
                 </th>
@@ -243,7 +245,9 @@ const ManageStudentsPage: React.FC = () => {
                   <div className="flex items-center">
                     Secondary Educator
                     {sortField === "Secondary_E_ID" && (
-                      <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                      <span className="ml-1">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </div>
                 </th>
@@ -253,15 +257,11 @@ const ManageStudentsPage: React.FC = () => {
             <tbody>
               {filteredStudents.length > 0 ? (
                 filteredStudents.map((student) => (
-                  <tr
-                    key={student.S_ID}
-                    className="hover:bg-base-200"
-                  >
+                  <tr key={student.S_ID} className="hover:bg-base-200">
                     <td>{student.S_ID}</td>
                     <td>{`${student.Fname} ${student.Lname}`}</td>
                     <td>
-                      {PROGRAMS.find((p) => p.id === student.Program_ID)
-                        ?.name || student.Program_ID}
+                      {PROGRAMS[student.Program_ID] || student.Program_ID}
                     </td>
                     <td>
                       <span

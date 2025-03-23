@@ -5,6 +5,7 @@ import { FiUsers, FiUserCheck, FiBook, FiFileText } from "react-icons/fi";
 import { getUserType, getUserId } from "../store/slices/authSlice";
 import { USER_ROLES } from "../types";
 import { toast } from "react-toastify";
+import { fetchDashboardData } from "../api";
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -19,23 +20,24 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const loadDashboardData = async () => {
+      setLoading(true);
       try {
-        // This is a placeholder
+        const data = await fetchDashboardData();
         setStats({
-          totalStudents: 125,
-          totalEmployees: 32,
-          totalPrograms: 8,
-          totalReports: 245,
+          totalStudents: data.totalStudents,
+          totalEmployees: data.totalEmployees,
+          totalPrograms: data.totalPrograms,
+          totalReports: data.totalReports,
         });
-        setLoading(false);
       } catch (err) {
         toast.error(`Failed to fetch dashboard data with error: ${err}`);
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchDashboardData();
+    loadDashboardData();
   }, []);
 
   const renderAdminOptions = () => {
@@ -157,7 +159,9 @@ const DashboardPage = () => {
         <div className="card bg-base-100 shadow-xl relative overflow-hidden">
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-400"></div>
           <div className="card-body p-5">
-            <p className="text-md font-medium text-gray-500">Reports Generated</p>
+            <p className="text-md font-medium text-gray-500">
+              Reports Generated
+            </p>
             <p className="text-3xl font-bold mt-1">{stats.totalReports}</p>
           </div>
         </div>

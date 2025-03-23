@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
-import axios from 'axios'
+import { fetchProgramData , login } from '../../api'
 
 interface AuthState {
   isAuthenticated: boolean
@@ -7,6 +7,7 @@ interface AuthState {
   userId: string | null
   loading: boolean
   error: string | null
+  programData: any
 }
 
 const initialState: AuthState = {
@@ -14,17 +15,19 @@ const initialState: AuthState = {
   userType: null,
   userId: null,
   loading: false,
-  error: null
+  error: null,
+  programData: [],
 }
 
 export const loginUser = createAsyncThunk(
   'auth/login',
   async ({ id, password }: { id: string, password: string }, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/login', { Id: id, pwd: password })
-      return response.data
+      const response = await login(id, password);
+      const programData = await fetchProgramData();
+      return { ...response, programData };
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.Error || 'Login failed')
+      return rejectWithValue(error.response?.data?.Error || 'Login failed');
     }
   }
 )
@@ -34,16 +37,26 @@ export const verifyAuth = createAsyncThunk(
   async (_, { getState, rejectWithValue }) => {
     const state = getState() as { auth: AuthState }
     if (state.auth.isAuthenticated && state.auth.userId && state.auth.userType !== null) {
-      return { 
-        Authenticated: true, 
-        Type: state.auth.userType, 
-        userId: state.auth.userId 
+      return {
+        Authenticated: true,
+        Type: state.auth.userType,
+        userId: state.auth.userId
       }
     }
     return rejectWithValue('Not authenticated')
   }
 )
-
+export const refetchProgramData = createAsyncThunk(
+  'auth/fetchProgramData',
+  async (_, { rejectWithValue }) => {
+    try {
+      const programData = await fetchProgramData();
+      return programData;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch program data');
+    }
+  }
+);
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -65,9 +78,11 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action: PayloadAction<any>) => {
         state.loading = false
-        state.isAuthenticated = action.payload.Authenticated
-        state.userType = action.payload.Type
-        state.userId = action.payload.Id
+        state.isAuthenticated = true;
+        state.userType = action.payload.Type;
+        state.userId = action.payload.id;
+        state.programData = action.payload.programData;
+        state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false
@@ -83,6 +98,19 @@ const authSlice = createSlice({
         state.userType = null
         state.userId = null
       })
+      .addCase(refetchProgramData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(refetchProgramData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.programData = action.payload;
+        state.error = null;
+      })
+      .addCase(refetchProgramData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
   }
 })
 
@@ -92,3 +120,14 @@ export default authSlice.reducer
 export const getIsAuthenticated = (state: { auth: AuthState }) => state.auth.isAuthenticated
 export const getUserType = (state: { auth: AuthState }) => state.auth.userType
 export const getUserId = (state: { auth: AuthState }) => state.auth.userId
+export const getProgramData = (state: { auth: AuthState }) => state.auth.programData;
+export const getProgramMapping = (state: { auth: AuthState }) => {
+  const programData = state.auth.programData || [];
+  if (!Array.isArray(programData)) {
+    return []; 
+  }
+  return state.auth.programData.reduce((mapping, program) => {
+    mapping[program.Program_ID] = program.Program_Name;
+    return mapping;
+  }, {} as Record<string, string>);
+};

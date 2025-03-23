@@ -19,7 +19,7 @@ interface StudentProfileFormProps {
   isEditing: boolean;
   canEdit: boolean;
   userType: number;
-  onUpdate?: (studentId: string) => void;
+  onUpdate: () => void;
 }
 
 const StudentProfileForm = ({
@@ -44,7 +44,7 @@ const StudentProfileForm = ({
 
   const handleUpdateClick = () => {
     if (onUpdate && formData.S_ID) {
-      onUpdate(formData.S_ID);
+      onUpdate();
     }
   };
 

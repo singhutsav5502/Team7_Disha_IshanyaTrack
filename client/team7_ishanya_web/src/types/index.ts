@@ -77,6 +77,13 @@ export interface Student {
     Upload_Date: string;
   }
   
+  export interface Program {
+    Program_ID: number;
+    Program_Name: string;
+    Student_IDs: string[]; 
+    Employee_IDs: string[];
+  }
+
   export interface UserRole {
     STUDENT: 0;
     EDUCATOR: 1;

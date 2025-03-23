@@ -8,15 +8,30 @@ import { toast } from "react-toastify";
 import ProfileHeader from "../components/profile/ProfileHeader.tsx";
 import StudentProfileForm from "../components/profile/StudentProfileForm.tsx";
 import EmployeeProfileForm from "../components/profile/EmployeeProfileForm.tsx";
-import ErrorMessage from "../components/common/ErrorMessage";
 import { FiEdit } from "react-icons/fi";
+import { fetchProfileData, fetchUserType } from "../api/index.ts";
 
 const ProfilePage = () => {
   const { id } = useParams<{
     id: string;
   }>();
-  // TODO: FETCH USER TYPE
-  const userType = 2;
+  const [userType,setUserType] = useState<number>(null);
+  useEffect(() => {
+    const getUserTypeData = async () => {
+      if (!id) return;
+      
+      try {
+        const data = await fetchUserType(id);
+        setUserType(data.userType);
+      } catch (err) {
+        console.error("Error getting user type:", err);
+        // Fallback to default user type
+        setUserType(0); // STUDENT as default
+      }
+    };
+    
+    getUserTypeData();
+  }, [id]);
   const navigate = useNavigate();
 
   const access_type = useSelector(getUserType);
@@ -65,24 +80,14 @@ const ProfilePage = () => {
   };
 
   useEffect(() => {
-    const fetchProfileData = async () => {
+    const loadProfileData = async () => {
       if (!id) return;
 
       setLoading(true);
       try {
-        let response;
-        if (id.startsWith("S")) {
-          response = await axios.post("/get_student_by_id", { S_ID: id });
-        } else if (id.startsWith("E")) {
-          response = await axios.post("/get_employee_by_id", {
-            Employee_ID: id,
-          });
-        } else {
-          throw new Error("Invalid ID format");
-        }
-
-        setProfileData(response.data);
-        setFormData(response.data);
+        const data = await fetchProfileData(id, userType);
+        setProfileData(data);
+        setFormData(data);
       } catch (err: any) {
         setError(err.message || "Failed to fetch profile data");
         toast.error(`Failed to fetch profile data with error: ${err}`);
@@ -91,7 +96,7 @@ const ProfilePage = () => {
       }
     };
 
-    fetchProfileData();
+    loadProfileData();
   }, [id]);
 
   const handleInputChange = (
@@ -137,30 +142,19 @@ const ProfilePage = () => {
   }
 
   if (error || !profileData) {
-    return (
-      <ErrorMessage
-        title="Error"
-        message={error || "Profile not found"}
-        onAction={() => navigate("/")}
-        actionText="Go to Dashboard"
-      />
-    );
+    toast.error(error||"Profile not found");
+    navigate("/");
+    return (<></>)
   }
 
   if (!canView()) {
-    return (
-      <ErrorMessage
-        title="Unauthorized"
-        message="You don't have permission to view this profile."
-        onAction={() => navigate("/")}
-        actionText="Go to Dashboard"
-        variant="warning"
-      />
-    );
+    navigate("/Unauthorized");
+    return (<></>)
   }
+  
 
   return (
-    <div className="container mx-auto py-10 px-4">
+    <div className="container mx-auto py-10 px-10">
       <ProfileHeader
         profileData={profileData}
         isStudent={userType==USER_ROLES.STUDENT}
@@ -189,12 +183,13 @@ const ProfilePage = () => {
 
         <div className={`card bg-base-100 shadow-xl ${isEditing ? "bg-blue-50" : ""}`}>
           <div className="card-body">
-            {id?.startsWith("S") ? (
+            {userType===USER_ROLES.STUDENT ? (
               <StudentProfileForm
                 formData={formData}
                 handleInputChange={handleInputChange}
                 isEditing={isEditing}
                 canEdit={canEdit()}
+                onUpdate = {handleSubmit}
                 userType={access_type as number}
               />
             ) : (
@@ -202,6 +197,7 @@ const ProfilePage = () => {
                 formData={formData}
                 handleInputChange={handleInputChange}
                 isEditing={isEditing}
+                onUpdate = {handleSubmit}
                 canEdit={canEdit()}
               />
             )}
@@ -209,7 +205,7 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {isEditing && canEdit() && (
+      {/* {isEditing && canEdit() && (
         <div className="flex justify-end mt-4">
           <button
             className={`btn btn-success btn-lg ${loading ? "loading" : ""}`}
@@ -219,7 +215,7 @@ const ProfilePage = () => {
             Update Data
           </button>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

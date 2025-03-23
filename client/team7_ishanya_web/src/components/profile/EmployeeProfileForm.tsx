@@ -15,7 +15,7 @@ interface EmployeeProfileFormProps {
   ) => void;
   isEditing: boolean;
   canEdit: boolean;
-  onUpdate?: (employeeId: string) => void;
+  onUpdate: () => void;
 }
 
 const EmployeeProfileForm = ({
@@ -40,7 +40,7 @@ const EmployeeProfileForm = ({
 
   const handleUpdateClick = () => {
     if (onUpdate && formData.Employee_ID) {
-      onUpdate(formData.Employee_ID);
+      onUpdate();
     }
   };
 

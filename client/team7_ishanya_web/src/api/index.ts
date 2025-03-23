@@ -118,7 +118,6 @@ export const fetchEmployeeImage = async (employeeId: string): Promise<string | n
     return getDummyEmployeeImage(employeeId);
   }
 };
-
 // Student-related API calls
 export const fetchStudents = async () => {
   try {
@@ -230,6 +229,81 @@ export const fetchDashboardData = async () => {
   }
 };
 
+// Add a new program
+export const addProgram = async (programData: { Program_Name: string }) => {
+  try {
+    const response = await fetch('/api/programs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(programData),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to add program');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error adding program:', error);
+    throw error;
+  }
+};
+
+// Remove an existing program
+export const removeProgram = async (programId: string) => {
+  try {
+    const response = await fetch(`/api/programs/${programId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error('Failed to remove program');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error removing program:', error);
+    throw error;
+  }
+};
+
+// Add educator to program
+export const addEducatorToProgram = async (programId: string, educatorId: string) => {
+  try {
+    const response = await fetch(`/api/programs/${programId}/educators`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ educatorId }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to add educator to program');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error adding educator to program:', error);
+    throw error;
+  }
+};
+
+// Add student to program
+export const addStudentToProgram = async (programId: string, studentId: string) => {
+  try {
+    const response = await fetch(`/api/programs/${programId}/students`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ studentId }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to add student to program');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error adding student to program:', error);
+    throw error;
+  }
+};
 // Dummy data generator for dashboard stats
 const getDummyDashboardData = () => {
   return {
@@ -257,7 +331,12 @@ const simulateProfileUpdate = (id: string, userType: number, formData: any) => {
     }, 800);
   });
 };
+
+//////////////////////////
 // Dummy data generators
+//////////////////////////
+
+
 const getDummyUser = () => {
   return { 'Authenticated': true, 'Type': 3 };
 }
@@ -446,32 +525,31 @@ const getDummyProfileData = (id: string, userType: number) => {
     };
   }
 };
-// Dummy data function for program mapping
 const getDummyProgramData = () => {
-  return {
-    "P001": {
+  return [
+    {
       Program_ID: "P001",
       Program_Name: "Early Intervention Program",
       Student_IDs: ["S001", "S002", "S005", "S008"],
-      Employee_IDs: ["E001", "E003", "E007"]
+      Employee_IDs: ["E001", "E003", "E007"],
     },
-    "P002": {
+    {
       Program_ID: "P002",
       Program_Name: "Special Education Program",
       Student_IDs: ["S003", "S004", "S009", "S012"],
-      Employee_IDs: ["E002", "E005", "E008"]
+      Employee_IDs: ["E002", "E005", "E008"],
     },
-    "P003": {
+    {
       Program_ID: "P003",
       Program_Name: "Vocational Training Program",
       Student_IDs: ["S006", "S010", "S013", "S015"],
-      Employee_IDs: ["E004", "E009", "E011"]
+      Employee_IDs: ["E004", "E009", "E011"],
     },
-    "P004": {
+    {
       Program_ID: "P004",
       Program_Name: "Therapy Services Program",
       Student_IDs: ["S007", "S011", "S014", "S016"],
-      Employee_IDs: ["E006", "E010", "E012"]
-    }
-  };
+      Employee_IDs: ["E006", "E010", "E012"],
+    },
+  ];
 };

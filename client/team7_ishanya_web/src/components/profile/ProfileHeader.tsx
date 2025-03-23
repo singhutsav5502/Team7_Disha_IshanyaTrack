@@ -33,7 +33,7 @@ const ProfileHeader = ({ profileData, isStudent, id }: ProfileHeaderProps) => {
     <div className="relative">
       <div className="flex flex-col md:flex-row items-center md:items-start justify-between">
         <div className="flex flex-col items-center md:items-start">
-          <h1 className="text-3xl font-bold mb-2">
+          <h1 className="text-3xl font-bold mb-2 overflow-y-hidden">
             {isStudent
               ? `${profileData.Fname} ${profileData.Lname}'s Profile`
               : `${profileData.Name}'s Profile`}

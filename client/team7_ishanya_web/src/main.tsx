@@ -23,7 +23,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           theme="light"
           transition={Bounce}
         />
-        <div data-theme = 'lemonade'>
+        <div id="main-container" data-theme = 'lemonade'>
         <App />
         </div>
       </BrowserRouter>

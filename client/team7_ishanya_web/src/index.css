@@ -1,4 +1,13 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-    themes: cupcake --default, dark --prefersdark, lemonade;
-  }
+  themes:
+    cupcake --default,
+    dark --prefersdark,
+    lemonade;
+}
+#root,
+#main-container {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
