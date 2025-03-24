@@ -180,7 +180,6 @@ const DashboardPage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {/* Made the entire card clickable */}
             <div
               className="card bg-base-100 shadow-xl cursor-pointer hover:shadow-2xl transition-shadow"
               onClick={openAttendanceModal}

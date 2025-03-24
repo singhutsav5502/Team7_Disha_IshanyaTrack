@@ -265,52 +265,6 @@ const CreateStudentPage = () => {
               <div>
                 <div className="form-control w-full">
                   <label className="label">
-                    <span className="label-text">Program</span>
-                  </label>
-                  <select
-                    className="select select-bordered w-full"
-                    name="Program_ID"
-                    value={formData.Program_ID}
-                    onChange={handleInputChange}
-                  >
-                    <option value="" disabled>
-                      Select program
-                    </option>
-                    {programCollection.items.map((item) => (
-                      <option key={item.value} value={item.value}>
-                        {item.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <div className="form-control w-full">
-                  <label className="label">
-                    <span className="label-text">Secondary Program</span>
-                  </label>
-                  <select
-                    className="select select-bordered w-full"
-                    name="Program2_ID"
-                    value={formData.Program2_ID}
-                    onChange={handleInputChange}
-                  >
-                    <option value="" disabled>
-                      Select secondary program
-                    </option>
-                    {programCollection.items.map((item) => (
-                      <option key={item.value} value={item.value}>
-                        {item.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <div className="form-control w-full">
-                  <label className="label">
                     <span className="label-text">Sessions per Week</span>
                   </label>
                   <input

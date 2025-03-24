@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { Employee, roleOptions } from "../types";
-import { fetchEmployees, updateEmployeeRole } from "../api";
+import { Employee, roleOptions } from "../../types";
+import { fetchEmployees, updateEmployeeRole } from "../../api";
 
 const ManagePermission = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);

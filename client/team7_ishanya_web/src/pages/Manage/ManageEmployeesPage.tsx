@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { Employee } from "../types";
+import { Employee } from "../../types";
 import { toast } from "react-toastify";
-import { fetchEmployees } from "../api";
+import { fetchEmployees } from "../../api";
 
 const ManageEmployeesPage: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);

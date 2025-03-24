@@ -7,18 +7,18 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import DashboardPage from "./pages/DashboardPage";
-import ManageStudentsPage from "./pages/ManageStudentsPage";
-import ManageEmployeesPage from "./pages/ManageEmployeesPage";
-import ManageProgramsPage from "./pages/ManageProgramsPage";
+import ManageStudentsPage from "./pages/Manage/ManageStudentsPage";
+import ManageEmployeesPage from "./pages/Manage/ManageEmployeesPage";
+import ManageProgramsPage from "./pages/Manage/ManageProgramsPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import CreateStudentPage from "./pages/Create/CreateStudent";
 import CreateEmployeePage from "./pages/Create/CreateEmployee";
 import CreateEducatorPage from "./pages/Create/CreateEducator";
-import ManagePermission from "./pages/ManagePermission";
+import ManagePermission from "./pages/Manage/ManagePermission";
 import MyStudents from "./pages/MyStudents";
 import { USER_ROLES } from "./types";
 import Navbar from "./components/Navbar";
-import ContactQueriesPage from "./pages/ContactQueriesPage";
+import ContactQueriesPage from "./pages/Manage/ContactQueriesPage";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();

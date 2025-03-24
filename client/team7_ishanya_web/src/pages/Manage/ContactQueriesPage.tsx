@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchContactQueries, resolveContactQuery } from "../api";
+import { fetchContactQueries, resolveContactQuery } from "../../api";
 import { toast } from "react-toastify";
 import { FiCheck, FiSearch } from "react-icons/fi";
 

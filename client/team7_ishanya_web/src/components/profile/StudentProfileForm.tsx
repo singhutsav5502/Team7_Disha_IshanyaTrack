@@ -5,7 +5,6 @@ import {
   comorbidityCollection,
   enrollmentYearCollection,
   statusCollection,
-  programCollection,
   timingsCollection,
   daysOfWeekCollection,
   sessionTypeCollection,

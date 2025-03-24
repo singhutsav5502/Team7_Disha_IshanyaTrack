@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   getProgramData,
   refetchProgramData,
-} from "../store/slices/authSlice";
+} from "../../store/slices/authSlice";
 import { toast } from "react-toastify";
 import {
   addProgram,
@@ -12,7 +12,7 @@ import {
   addStudentToProgram,
   fetchStudents,
   fetchEducatorMapping
-} from "../api";
+} from "../../api";
 
 const ManageProgramsPage: React.FC = () => {
   const dispatch = useDispatch();

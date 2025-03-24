@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import { FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Student, USER_ROLES } from "../types";
+import { Student, USER_ROLES } from "../../types";
 import { toast } from "react-toastify";
 import {
   getUserType,
   getUserId,
   getProgramMapping,
-} from "../store/slices/authSlice";
-import { fetchEducatorMapping, fetchStudents } from "../api";
+} from "../../store/slices/authSlice";
+import { fetchEducatorMapping, fetchStudents } from "../../api";
 
 const ManageStudentsPage: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
