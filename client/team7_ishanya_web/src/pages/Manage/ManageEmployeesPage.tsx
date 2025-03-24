@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { FiEye } from "react-icons/fi";
+import { FiEye, FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { Employee } from "../../types";
 import { toast } from "react-toastify";
-import { fetchEmployees } from "../../api";
+import { fetchEmployees, deleteEmployee } from "../../api";
+import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 
 const ManageEmployeesPage: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -13,6 +14,12 @@ const ManageEmployeesPage: React.FC = () => {
   const [sortField, setSortField] = useState<keyof Employee>("Employee_ID");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const navigate = useNavigate();
+
+  // State for delete confirmation modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,6 +79,39 @@ const ManageEmployeesPage: React.FC = () => {
   const navigateToProfile = (employeeId: string) => {
     navigate(`/profile/${employeeId}`);
   };
+
+  const handleDeleteClick = (employee: Employee) => {
+    setEmployeeToDelete(employee);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!employeeToDelete) return;
+
+    try {
+      console.log(employeeToDelete)
+      await deleteEmployee(employeeToDelete.Employee_ID);
+      setEmployees(
+        employees.filter(
+          (emp) => emp.Employee_ID !== employeeToDelete.Employee_ID
+        )
+      );
+      toast.success(
+        `Employee ${employeeToDelete.Name} has been deleted successfully`
+      );
+      setShowDeleteModal(false);
+      setEmployeeToDelete(null);
+    } catch (error) {
+      toast.error(`Failed to delete employee: ${error}`);
+    }
+  };
+
+  // Function to close the modal
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setEmployeeToDelete(null);
+  };
+
   return (
     <>
       {loading ? (
@@ -80,7 +120,7 @@ const ManageEmployeesPage: React.FC = () => {
         </div>
       ) : (
         <div className="container mx-auto py-10">
-          <h1 className="text-3xl font-bold mb-6">Manage Employees</h1>
+          <h1 className="text-3xl font-bold mb-6 ml-4">Manage Employees</h1>
 
           <div className="card bg-base-100 shadow-xl mb-6">
             <div className="card-body">
@@ -142,7 +182,6 @@ const ManageEmployeesPage: React.FC = () => {
               </div>
             </div>
           </div>
-
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body overflow-x-auto">
               <table className="table w-full">
@@ -232,22 +271,33 @@ const ManageEmployeesPage: React.FC = () => {
                             className={`badge ${
                               employee.Status === "Active"
                                 ? "badge-success"
-                                : "badge-error"
+                                : employee.Status === "Relieved"
+                                  ? "badge-error"
+                                  : "badge-warning"
                             }`}
                           >
                             {employee.Status}
                           </span>
                         </td>
                         <td className="text-center">
-                          <button
-                            className="btn btn-ghost btn-sm text-primary"
-                            onClick={() =>
-                              navigateToProfile(employee.Employee_ID)
-                            }
-                          >
-                            <FiEye className="mr-2" />
-                            View
-                          </button>
+                          <div className="flex justify-center space-x-2">
+                            <button
+                              className="btn btn-ghost btn-sm text-primary"
+                              onClick={() =>
+                                navigateToProfile(employee.Employee_ID)
+                              }
+                            >
+                              <FiEye className="mr-1" />
+                              View
+                            </button>
+                            <button
+                              className="btn btn-ghost btn-sm text-error"
+                              onClick={() => handleDeleteClick(employee)}
+                            >
+                              <FiTrash2 className="mr-1" />
+                              Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -264,6 +314,14 @@ const ManageEmployeesPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        showModal={showDeleteModal}
+        hideModal={handleDeleteCancel}
+        confirmModal={handleDeleteConfirm}
+        message={`Are you sure you want to delete employee ${employeeToDelete?.Name}? This action cannot be undone.`}
+      />
     </>
   );
 };

@@ -1345,3 +1345,42 @@ def add_report():
         }
         print("Error adding report:", error_details)
         return jsonify(error_details), 500
+@app.route('/delete-employee/<employee_id>', methods=['DELETE'])
+def delete_employee(employee_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # First check if employee exists
+        cursor.execute("SELECT * FROM Employees WHERE Employee_ID = %s", (employee_id,))
+        employee = cursor.fetchone()
+
+        if not employee:
+            cursor.close()
+            conn.close()
+            return jsonify({'error': 'Employee not found'}), 404
+
+        # Delete from auth table first (foreign key constraint)
+        cursor.execute("DELETE FROM auth WHERE ID = %s", (employee_id,))
+
+        # Delete from Program_Employees if exists
+        cursor.execute("DELETE FROM Program_Employees WHERE Employee_ID = %s", (employee_id,))
+
+        # Delete from Educator table if exists
+        cursor.execute("DELETE FROM Educator WHERE Employee_ID = %s", (employee_id,))
+
+        # Finally delete from Employees table
+        cursor.execute("DELETE FROM Employees WHERE Employee_ID = %s", (employee_id,))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'message': f'Employee {employee_id} deleted successfully'
+        }), 200
+
+    except Exception as e:
+        print("Error deleting employee:", e)
+        return jsonify({'error': f'Failed to delete employee: {str(e)}'}), 500

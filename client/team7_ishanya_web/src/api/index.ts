@@ -464,3 +464,12 @@ export const addReport = async (studentId: string, quarter: string, reportUrl: s
   }
 };
 
+export const deleteEmployee = async (employeeId: string) => {
+  try {
+    const response = await api.delete(`${API_BASE_URL}/delete-employee/${employeeId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting employee:", error);
+    throw error;
+  }
+};
