@@ -41,7 +41,7 @@ import os
 load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = ''
+app.config['SECRET_KEY'] = 'c926768d46485785979f3ea0ebcfce929923fa7ad058c712d1fc2eb37e07cfe5'
 app.config['MAIL_SERVER'] = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.environ.get('SMTP_PORT', 587))
 app.config['MAIL_USE_TLS'] = True
@@ -629,24 +629,27 @@ def create_new_educator():
         print("Error creating educator:", e)
         return jsonify({'success': False, 'message': f'Failed to create educator: {str(e)}'}), 500
 
+def generate_password(length=10):
+    characters = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(random.choice(characters) for _ in range(length))
+
+
+
 @app.route('/create_new_employee', methods=['POST'])
 def create_new_employee():
     try:
         data = request.get_json()
-
-
         conn = get_db_connection()
         cursor = conn.cursor()
+
         cursor.execute("SELECT MAX(CAST(SUBSTRING(Employee_ID, 2) AS UNSIGNED)) FROM Employees")
         result = cursor.fetchone()
         last_id = result[0] if result[0] else 0
         employee_id = f'E{last_id + 1}'
-        employee_data = {
-            'Employee_ID': employee_id,
-            **data
-        }
 
-        # Insert into Employees table
+        password = generate_password()
+        employee_data = {'Employee_ID': employee_id, **data}
+
         fields = ', '.join(employee_data.keys())
         placeholders = ', '.join(['%s'] * len(employee_data))
         values = tuple(employee_data.values())
@@ -654,45 +657,35 @@ def create_new_employee():
         query = f"INSERT INTO Employees ({fields}) VALUES ({placeholders})"
         cursor.execute(query, values)
 
-        # Add to auth table with standard password
-        standard_password = 'welcome123'  # generate dynamically while setting up email
-        cursor.execute(
-            "INSERT INTO auth (ID, pwd, type) VALUES (%s, %s, %s)",
-            (employee_id, standard_password, 1)
-        )
+        cursor.execute("INSERT INTO auth (ID, pwd, type) VALUES (%s, %s, %s)", (employee_id, password, 1))
 
         conn.commit()
         cursor.close()
         conn.close()
 
-        return jsonify({
-            'success': True,
-            'message': 'Employee created successfully',
-            'employee_id': employee_id
-        }), 201
+        email_body = f"Hello {data['Name']},\n\nYour account has been created.\nYour Employee ID: {employee_id}\nYour Password: {password}\n\nPlease change your password after logging in."
+        send_email(data['Email'], "Your New Employee Account", email_body)
+
+        return jsonify({'success': True, 'message': 'Employee created successfully', 'employee_id': employee_id}), 201
 
     except Exception as e:
         print("Error creating employee:", e)
-        return jsonify({'error': 'Internal server error' +str(e)}), 500
+        return jsonify({'error': 'Internal server error' + str(e)}), 500
 
 @app.route('/create_new_student', methods=['POST'])
 def create_new_student():
     try:
         data = request.get_json()
-
-
         conn = get_db_connection()
         cursor = conn.cursor()
-        # Generate Student ID
+
         cursor.execute("SELECT MAX(CAST(SUBSTRING(S_ID, 2) AS UNSIGNED)) FROM Student")
         result = cursor.fetchone()
         last_id = result[0] if result[0] else 0
         student_id = f'S{last_id + 1}'
 
-        student_data = {
-            'S_ID': student_id,
-            **data
-        }
+        password = generate_password()
+        student_data = {'S_ID': student_id, **data}
 
         fields = ', '.join(student_data.keys())
         placeholders = ', '.join(['%s'] * len(student_data))
@@ -701,22 +694,16 @@ def create_new_student():
         query = f"INSERT INTO Student ({fields}) VALUES ({placeholders})"
         cursor.execute(query, values)
 
-        # Add to auth table with standard password
-        standard_password = 'welcome123'  # generate dynamically while setting up email
-        cursor.execute(
-            "INSERT INTO auth (ID, pwd, type) VALUES (%s, %s, %s)",
-            (student_id, standard_password, 0)  # Assuming 0 is the type for students
-        )
+        cursor.execute("INSERT INTO auth (ID, pwd, type) VALUES (%s, %s, %s)", (student_id, password, 0))
 
         conn.commit()
         cursor.close()
         conn.close()
 
-        return jsonify({
-            'success': True,
-            'message': 'Student created successfully',
-            'student_id': student_id
-        }), 201
+        email_body = f"Hello Parent,\n\nYour child's student account has been created.\nStudent ID: {student_id}\nPassword: {password}\n\nPlease ensure your child changes the password after logging in."
+        send_email(data['Parent_Email'], "Your Child's Student Account Details", email_body)
+
+        return jsonify({'success': True, 'message': 'Student created successfully', 'student_id': student_id}), 201
 
     except Exception as e:
         print("Error creating student:", e)
@@ -803,7 +790,15 @@ def send_emails(recipients, subject, body):
                     sender=f"Ishanya <{app.config['MAIL_DEFAULT_SENDER']}>"
                 )
                 mail.send(msg)
-
+def send_email(recipient, subject, body):
+    with app.app_context():
+        msg = Message(
+            subject=subject,
+            recipients=[recipient],
+            body=body,
+            sender=f"Ishanya <{app.config['MAIL_DEFAULT_SENDER']}>"
+        )
+        mail.send(msg)
 # Endpoint for sending email broadcasts
 @app.route('/send-email-broadcast', methods=['POST'])
 def send_email_broadcast():
