@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AppDispatch, RootState } from "../../store";
@@ -28,12 +28,13 @@ const LoginPage = () => {
   const { loading, error, isAuthenticated } = useSelector(
     (state: RootState) => state.auth
   );
-
   // If user is already authenticated, redirect to dashboard
-  if (isAuthenticated) {
-    const from = (location.state as any)?.from?.pathname || "/";
-    navigate(from, { replace: true });
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = (location.state as any)?.from?.pathname || "/";
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location]);
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
