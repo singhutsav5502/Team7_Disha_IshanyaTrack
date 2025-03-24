@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchStudentImage, fetchEmployeeImage } from "../../api";
+// import { fetchStudentImage, fetchEmployeeImage } from "../../api";
 interface ProfileHeaderProps {
   profileData: any;
   isStudent: boolean | undefined;
@@ -9,26 +9,26 @@ interface ProfileHeaderProps {
 const ProfileHeader = ({ profileData, isStudent, id }: ProfileHeaderProps) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  useEffect(() => {
-    const fetchProfileImage = async () => {
-      if (!id) return;
+  // useEffect(() => {
+  //   const fetchProfileImage = async () => {
+  //     if (!id) return;
 
-      setLoading(true);
-      try {
-        const imageUrl = isStudent
-          ? await fetchStudentImage(id)
-          : await fetchEmployeeImage(id);
+  //     setLoading(true);
+  //     try {
+  //       const imageUrl = isStudent
+  //         ? await fetchStudentImage(id)
+  //         : await fetchEmployeeImage(id);
 
-        setImageUrl(imageUrl);
-      } catch (error) {
-        console.error("Failed to fetch profile image:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       setImageUrl(imageUrl);
+  //     } catch (error) {
+  //       console.error("Failed to fetch profile image:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchProfileImage();
-  }, [id, isStudent]);
+  //   fetchProfileImage();
+  // }, [id, isStudent]);
   return (
     <div className="relative">
       <div className="flex flex-col md:flex-row items-center md:items-start justify-between">
@@ -57,9 +57,17 @@ const ProfileHeader = ({ profileData, isStudent, id }: ProfileHeaderProps) => {
               ) : (
                 <div className="flex items-center justify-center w-full h-full bg-primary text-primary-content">
                   <span className="text-2xl font-bold">
-                    {isStudent
-                      ? `${profileData.Fname?.[0]}${profileData.Lname?.[0]}`
-                      : profileData.Name?.[0] || "?"}
+                    {isStudent ? (
+                      <img
+                        src={`https://avatar.iran.liara.run/public/${profileData.Gender === "Male" ? "boy" : profileData.Gender === "Female" ? "girl" : "girl"}?username=[${profileData.Fname?.[0]}${profileData.Lname?.[0]}]`}
+                        alt="avatar-image"
+                      />
+                    ) : (
+                      <img
+                        src={`https://avatar.iran.liara.run/public/${profileData.Gender === "Male" ? "boy" : profileData.Gender === "Female" ? "girl" : "girl"}?username=[${profileData.Name}]`}
+                        alt="avatar-image"
+                      />
+                    )}
                   </span>
                 </div>
               )}

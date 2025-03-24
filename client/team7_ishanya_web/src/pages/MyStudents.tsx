@@ -225,9 +225,13 @@ const MyStudentsPage = () => {
                       <td>
                         <div className="flex items-center space-x-3">
                           <div className="flex items-center justify-center w-10 h-10 bg-primary text-primary-content rounded-full">
-                            <span className="text-xs font-bold">
+                            {/* <span className="text-xs font-bold">
                              { `${student.Fname?.[0]}${student.Lname?.[0]}`}
-                            </span>
+                            </span> */}
+                            <img
+                              src={`https://avatar.iran.liara.run/public/${student.Gender === "Male" ? "boy" : student.Gender === "Female" ? "girl" : "girl"}?username=[${student.Fname?.[0]}${student.Lname?.[0]}]`}
+                              alt="avatar-image"
+                            />
                           </div>
                           <div>
                             <div className="font-bold">
