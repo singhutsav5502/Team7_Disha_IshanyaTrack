@@ -289,8 +289,8 @@ const StudentProfileForm = ({
           </select>
         </div>
       </div>
-
-      <div>
+            {/* TODO: QUERY TABLE FOR STUDENT -> PROGRAM map */}
+      {/* <div>
         <div className="form-control w-full">
           <label className="label">
             <span className="label-text">Program</span>
@@ -334,7 +334,7 @@ const StudentProfileForm = ({
             ))}
           </select>
         </div>
-      </div>
+      </div> */}
 
       <div>
         <div className="form-control w-full">

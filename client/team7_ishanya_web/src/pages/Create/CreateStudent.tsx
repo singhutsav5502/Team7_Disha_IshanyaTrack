@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
@@ -16,7 +16,6 @@ const CreateStudentPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    S_ID: "",
     Fname: "",
     Lname: "",
     Photo: "",
@@ -28,8 +27,6 @@ const CreateStudentPage = () => {
     Enrollment_Year: "",
     Status: "Active",
     Email: "",
-    Program_ID: "",
-    Program2_ID: "",
     Sessions: "",
     Timings: "",
     Days_of_Week: "",
@@ -78,22 +75,7 @@ const CreateStudentPage = () => {
         <div className="card-body">
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div className="form-control w-full">
-                  <label className="label">
-                    <span className="label-text">Student ID</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="S_ID"
-                    value={formData.S_ID}
-                    onChange={handleInputChange}
-                    className="input input-bordered w-full"
-                    required
-                  />
-                </div>
-              </div>
-
+             
               <div>
                 <div className="form-control w-full">
                   <label className="label">

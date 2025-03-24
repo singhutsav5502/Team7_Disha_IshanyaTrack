@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import { getUserType, getUserId } from "../store/slices/authSlice";
 import { USER_ROLES } from "../types";
 import { toast } from "react-toastify";
@@ -9,7 +8,11 @@ import ProfileHeader from "../components/profile/ProfileHeader.tsx";
 import StudentProfileForm from "../components/profile/StudentProfileForm.tsx";
 import EmployeeProfileForm from "../components/profile/EmployeeProfileForm.tsx";
 import { FiEdit } from "react-icons/fi";
-import { fetchProfileData, fetchUserType } from "../api/index.ts";
+import {
+  fetchProfileData,
+  fetchUserType,
+  updateProfileData,
+} from "../api/index.ts";
 
 const ProfilePage = () => {
   const { id } = useParams<{
@@ -53,10 +56,10 @@ const ProfilePage = () => {
         setUserTypeLoading(false);
         return;
       }
-  
+
       try {
         const data = await fetchUserType(id);
-        setUserType(data.userType);
+        setUserType(data.type);
       } catch (err) {
         console.error("Error getting user type:", err);
         // Fallback to default user type
@@ -65,19 +68,19 @@ const ProfilePage = () => {
         setUserTypeLoading(false);
       }
     };
-  
+
     getUserTypeData();
   }, [id]);
-  
+
   useEffect(() => {
     // Only run this effect if userType is loaded (not in loading state)
     if (userTypeLoading) {
       return;
     }
-  
+
     const loadProfileData = async () => {
       if (!id) return;
-  
+
       setLoading(true);
       try {
         const data = await fetchProfileData(id, userType);
@@ -90,18 +93,18 @@ const ProfilePage = () => {
         setLoading(false);
       }
     };
-  
+
     loadProfileData();
   }, [id, userType, userTypeLoading]);
-  
+
   const canView = () => {
     // If still loading data, don't make a decision yet
     if (userTypeLoading || loading) {
       return true; // Return true to prevent premature navigation
     }
-  
+
     if (access_type === null || !access_id) return false;
-  
+
     if (access_type === USER_ROLES.SUPERUSER) return true;
     if (access_type === USER_ROLES.ADMIN) return true;
     if (access_type === USER_ROLES.EDUCATOR) {
@@ -111,6 +114,7 @@ const ProfilePage = () => {
       ) {
         return true;
       }
+      if(userType === access_type) return true;
       return false;
     }
     if (access_type === USER_ROLES.STUDENT) {
@@ -118,7 +122,7 @@ const ProfilePage = () => {
     }
     return false;
   };
-  
+
   // Use a separate effect for navigation to avoid race conditions
   useEffect(() => {
     // Only check authorization after all data is loaded
@@ -136,23 +140,10 @@ const ProfilePage = () => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      let endpoint = "";
-      if (userType == USER_ROLES.STUDENT) {
-        endpoint = "/update_student_data";
-      } else if (userType >= USER_ROLES.EDUCATOR) {
-        endpoint = "/update_employee_data";
-      } else {
-        throw new Error("Invalid ID format");
-      }
-
-      const response = await axios.post(endpoint, formData);
-      if (response.data) {
-        setProfileData(formData);
-        setIsEditing(false);
-        toast.success("Profile updated successfully");
-      } else {
-        throw new Error("Failed to update profile");
-      }
+      const response = await updateProfileData(id, userType, formData);
+      setProfileData(formData);
+      setIsEditing(false);
+      toast.success("Profile updated successfully");
     } catch (err: any) {
       toast.error(err.message || "Failed to update profile");
     } finally {
@@ -167,7 +158,6 @@ const ProfilePage = () => {
       </div>
     );
   }
-
   if (error || !profileData) {
     toast.error(error || "Profile not found");
     navigate("/");
@@ -176,11 +166,13 @@ const ProfilePage = () => {
 
   return (
     <div className="container mx-auto py-10 px-10">
-      <ProfileHeader
-        profileData={profileData}
-        isStudent={userType == USER_ROLES.STUDENT}
-        id={id}
-      />
+
+        <ProfileHeader
+          profileData={profileData}
+          isStudent={userType == USER_ROLES.STUDENT}
+          id={id}
+        />
+ 
 
       <div className="divider my-8"></div>
 
@@ -217,14 +209,17 @@ const ProfilePage = () => {
                 onUpdate={handleSubmit}
                 accessType={access_type as number}
               />
-            ) : (
+            ) : userType > USER_ROLES.STUDENT ? (
               <EmployeeProfileForm
                 formData={formData}
                 handleInputChange={handleInputChange}
                 isEditing={isEditing}
                 onUpdate={handleSubmit}
                 canEdit={canEdit()}
+                accessType={access_type as number}
               />
+            ) : (
+              <></>
             )}
           </div>
         </div>

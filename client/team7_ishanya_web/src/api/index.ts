@@ -66,7 +66,7 @@ export const fetchUserType = async (userId: string) => {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ userId })
+      body: JSON.stringify({ Id:userId })
     });
 
     if (!response.ok) {
@@ -153,6 +153,7 @@ export const fetchProgramData = async () => {
       console.error(`Failed to fetch program mapping: ${response.status}`);
       return getDummyProgramData();
     }
+    return await response.json();
   } catch (error) {
     console.error("Error fetching program mapping:", error);
     return getDummyProgramData();
@@ -232,7 +233,7 @@ export const fetchDashboardData = async () => {
 // Add a new program
 export const addProgram = async (programData: { Program_Name: string }) => {
   try {
-    const response = await fetch('/api/programs', {
+    const response = await fetch(`${API_BASE_URL}/api/programs`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -252,7 +253,7 @@ export const addProgram = async (programData: { Program_Name: string }) => {
 // Remove an existing program
 export const removeProgram = async (programId: string) => {
   try {
-    const response = await fetch(`/api/programs/${programId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/programs/${programId}`, {
       method: 'DELETE',
     });
     if (!response.ok) {
@@ -268,7 +269,7 @@ export const removeProgram = async (programId: string) => {
 // Add educator to program
 export const addEducatorToProgram = async (programId: string, educatorId: string) => {
   try {
-    const response = await fetch(`/api/programs/${programId}/educators`, {
+    const response = await fetch(`${API_BASE_URL}/api/programs/${programId}/educators`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -288,7 +289,7 @@ export const addEducatorToProgram = async (programId: string, educatorId: string
 // Add student to program
 export const addStudentToProgram = async (programId: string, studentId: string) => {
   try {
-    const response = await fetch(`/api/programs/${programId}/students`, {
+    const response = await fetch(`${API_BASE_URL}/api/programs/${programId}/students`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -352,22 +353,214 @@ export const create_new_employee = async (employeeData) => {
     const response = await fetch(`${API_BASE_URL}/create_new_employee`, {
       method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(employeeData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to create employee');
+    }
+
+    return {
+      success: true,
+      data: {
+        employeeId: data.employeeId,
+        defaultPassword: data.defaultPassword,
+      },
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};
+
+// API function to update employee role
+export const updateEmployeeRole = async (employeeId: string, roleType: number) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/update-employee-role`, {
+      method: 'POST',
+      headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(employeeData)
+      body: JSON.stringify({
+        Employee_ID: employeeId,
+        Type: roleType
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to update employee role');
+    }
+
+    return {
+      success: true,
+      data: data
+    };
+  } catch (error: any) {
+    console.error("Error updating employee role:", error);
+    return {
+      success: false,
+      message: error.message
+    };
+  }
+};
+
+
+export const submitContactQuery = async (queryData: {
+  Parent_Name: string;
+  Parent_Email: string;
+  Student_Name: string;
+  Query: string;
+}) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/contact-query`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(queryData)
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to create employee');
+      throw new Error(errorData.message || 'Failed to submit query');
+    }
+
+    return {
+      success: true,
+      data: await response.json()
+    };
+  } catch (error: any) {
+    console.error("Error submitting contact query:", error);
+    return {
+      success: false,
+      message: error.message
+    };
+  }
+};
+
+export const fetchContactQueries = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/contact-queries`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch contact queries');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching contact queries:", error);
+    throw error;
+  }
+};
+
+
+// Resolve (delete) a contact query
+export const resolveContactQuery = async (queryId: number) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/contact-query/${queryId}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to resolve query');
+    }
+    
+    return {
+      success: true,
+      message: 'Query resolved successfully'
+    };
+  } catch (error: any) {
+    console.error("Error resolving contact query:", error);
+    return {
+      success: false,
+      message: error.message
+    };
+  }
+};
+
+
+export const addAttendance = async (attendanceData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/attendance`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(attendanceData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to add attendance');
     }
 
     return await response.json();
   } catch (error) {
-    console.error("Error creating employee:", error);
+    console.error('Error adding attendance:', error);
     throw error;
   }
 };
+
+export const fetchStudentAttendance = async (studentId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/attendance/${studentId}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch attendance data');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching student attendance:", error);
+    throw error;
+  }
+};
+
+// Add function to fetch educator details
+export const fetchEducatorDetails = async (educatorId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/get_employee_by_id`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ Employee_ID: educatorId })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch educator details');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching educator details:", error);
+    throw error;
+  }
+};
+
+export const fetchAttendanceHistory = async (studentId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/attendance/history/${studentId}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch attendance history');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching attendance history:", error);
+    throw error;
+  }
+};
+
+
 // Dummy data generator for dashboard stats
 const getDummyDashboardData = () => {
   return {
@@ -402,11 +595,11 @@ const simulateProfileUpdate = (id: string, userType: number, formData: any) => {
 
 
 const getDummyUser = () => {
-  return { 'Authenticated': true, 'Type':3 };
+  return { 'Authenticated': true, 'Type': 3 };
 }
 const getDummyUserType = () => {
   // Default role
-  const userType =3;
+  const userType = 3;
 
   return { userType };
 };
@@ -527,12 +720,24 @@ const getDummyStudentImage = (studentId: string) => {
 };
 
 const getDummyEducatorMapping = () => {
-  return {
-    "E001": "John Doe (Special Educator)",
-    "E002": "Jane Smith (Therapist)",
-    "E003": "Amit Patel (Vocational Trainer)",
-    "E004": "Sunita Sharma (Speech Therapist)"
-  };
+  return [
+    {
+      Employee_ID: "E001",
+      Name: "John Doe (Special Educator)"
+    },
+    {
+      Employee_ID: "E002",
+      Name: "Jane Smith (Therapist)"
+    },
+    {
+      Employee_ID: "E003",
+      Name: "Amit Patel (Vocational Trainer)"
+    },
+    {
+      Employee_ID: "E004",
+      Name: "Sunita Sharma (Speech Therapist)"
+    },
+  ];
 };
 // Dummy data generator for profile data
 const getDummyProfileData = (id: string, userType: number) => {

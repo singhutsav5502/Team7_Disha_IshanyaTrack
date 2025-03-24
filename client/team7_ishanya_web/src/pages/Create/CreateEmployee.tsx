@@ -14,7 +14,6 @@ const CreateEmployeePage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    Employee_ID: "",
     Name: "",
     Gender: "",
     Photo: "",
@@ -67,22 +66,6 @@ const CreateEmployeePage = () => {
         <div className="card-body">
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div className="form-control w-full">
-                  <label className="label">
-                    <span className="label-text">Employee ID</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="Employee_ID"
-                    value={formData.Employee_ID}
-                    onChange={handleInputChange}
-                    className="input input-bordered w-full"
-                    required
-                  />
-                </div>
-              </div>
-
               <div>
                 <div className="form-control w-full">
                   <label className="label">

@@ -10,6 +10,7 @@ import {
   FiFileText,
   FiSettings,
   FiChevronDown,
+  FiPlus,
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserType, getUserId, logout } from "../store/slices/authSlice";
@@ -22,6 +23,7 @@ type NavItem = {
   path: string;
   icon: React.JSX.Element;
   isManageItem?: boolean;
+  isCreateItem?: boolean;
 };
 
 const Navbar = () => {
@@ -31,6 +33,7 @@ const Navbar = () => {
   const userId = useSelector(getUserId);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isManageDropdownOpen, setIsManageDropdownOpen] = useState(false);
+  const [isCreateDropdownOpen, setIsCreateDropdownOpen] = useState(false);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -39,31 +42,64 @@ const Navbar = () => {
   };
 
   const getNavItems = (): NavItem[] => {
-    const items: NavItem[] = [{ label: "Dashboard", path: "/", icon: <FiUser /> }];
+    const items: NavItem[] = [
+      { label: "Dashboard", path: "/", icon: <FiUser /> },
+    ];
 
     if (userType === USER_ROLES.SUPERUSER || userType === USER_ROLES.ADMIN) {
       items.push(
         {
+          label: "Manage Queries",
+          path: "/manage/queries",
+          icon: <FiUsers />,
+          isManageItem: true,
+        },
+        {
           label: "Manage Students",
           path: "/manage/students",
           icon: <FiUsers />,
-          isManageItem: true
+          isManageItem: true,
         },
         {
           label: "Manage Employees",
           path: "/manage/employees",
           icon: <FiUsers />,
-          isManageItem: true
+          isManageItem: true,
         },
         {
           label: "Manage Programs",
           path: "/manage/programs",
           icon: <FiSettings />,
-          isManageItem: true
+          isManageItem: true,
+        },
+        {
+          label: "Create Student",
+          path: "/create/student",
+          icon: <FiPlus />,
+          isCreateItem: true,
+        },
+        {
+          label: "Create Employee",
+          path: "/create/employee",
+          icon: <FiPlus />,
+          isCreateItem: true,
+        },
+        {
+          label: "Assign Educator",
+          path: "/create/educator",
+          icon: <FiPlus />,
+          isCreateItem: true,
         }
       );
     }
-
+    if (userType === USER_ROLES.SUPERUSER) {
+      items.push({
+        label: "Manage Permissions",
+        path: "/manage/permissions",
+        icon: <FiSettings />,
+        isManageItem: true,
+      });
+    }
     if (
       userType &&
       (userType === USER_ROLES.EDUCATOR || userType >= USER_ROLES.ADMIN)
@@ -85,8 +121,11 @@ const Navbar = () => {
   };
 
   const navItems = getNavItems();
-  const manageItems = navItems.filter(item => item.isManageItem);
-  const regularItems = navItems.filter(item => !item.isManageItem);
+  const manageItems = navItems.filter((item) => item.isManageItem);
+  const createItems = navItems.filter((item) => item.isCreateItem);
+  const regularItems = navItems.filter(
+    (item) => !item.isManageItem && !item.isCreateItem
+  );
 
   useEffect(() => {
     const handleResize = () => {
@@ -95,84 +134,84 @@ const Navbar = () => {
       }
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [isDrawerOpen]);
 
   // Animation variants
   const dropdownVariants = {
     hidden: { opacity: 0, y: -10, scale: 0.95 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
+    visible: {
+      opacity: 1,
+      y: 0,
       scale: 1,
-      transition: { 
+      transition: {
         duration: 0.2,
-        ease: "easeOut"
-      }
+        ease: "easeOut",
+      },
     },
-    exit: { 
-      opacity: 0, 
-      y: -10, 
+    exit: {
+      opacity: 0,
+      y: -10,
       scale: 0.95,
-      transition: { 
+      transition: {
         duration: 0.15,
-        ease: "easeIn"
-      }
-    }
+        ease: "easeIn",
+      },
+    },
   };
 
   const drawerVariants = {
     hidden: { x: "100%" },
-    visible: { 
+    visible: {
       x: 0,
-      transition: { 
-        type: "spring", 
-        stiffness: 300, 
-        damping: 30 
-      }
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+      },
     },
-    exit: { 
+    exit: {
       x: "100%",
-      transition: { 
-        type: "spring", 
-        stiffness: 300, 
-        damping: 30 
-      }
-    }
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+      },
+    },
   };
 
   const overlayVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
-      transition: { duration: 0.2 }
+      transition: { duration: 0.2 },
     },
-    exit: { 
+    exit: {
       opacity: 0,
-      transition: { duration: 0.2 }
-    }
+      transition: { duration: 0.2 },
+    },
   };
 
   const staggerChildren = {
     visible: {
       transition: {
-        staggerChildren: 0.05
-      }
-    }
+        staggerChildren: 0.05,
+      },
+    },
   };
 
   const menuItemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { 
+      transition: {
         type: "spring",
         stiffness: 400,
-        damping: 25
-      }
-    }
+        damping: 25,
+      },
+    },
   };
 
   return (
@@ -180,11 +219,15 @@ const Navbar = () => {
       <div className="bg-base-100 shadow-sm sticky top-0 z-10 ">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            <div 
+            <div
               className="flex items-center cursor-pointer"
               onClick={() => navigate("/")}
             >
-              <img src="/ishanya_logo.png" alt="Ishanya India" className="h-10" />
+              <img
+                src="/ishanya_logo.png"
+                alt="Ishanya India"
+                className="h-10"
+              />
               <span className="ml-3 font-bold text-lg hidden md:block">
                 Ishanya Portal
               </span>
@@ -196,7 +239,9 @@ const Navbar = () => {
                 className="px-3 py-2 rounded hover:bg-gray-100 flex items-center"
                 onClick={() => navigate("/")}
               >
-                <span className="mr-2"><FiUser /></span>
+                <span className="mr-2">
+                  <FiUser />
+                </span>
                 Dashboard
               </button>
 
@@ -205,10 +250,16 @@ const Navbar = () => {
                 <div className="relative ">
                   <button
                     className="px-3 py-2 rounded hover:bg-gray-100 flex items-center cursor-pointer"
-                    onClick={() => setIsManageDropdownOpen(!isManageDropdownOpen)}
-                    onBlur={() => setTimeout(() => setIsManageDropdownOpen(false), 100)}
+                    onClick={() =>
+                      setIsManageDropdownOpen(!isManageDropdownOpen)
+                    }
+                    onBlur={() =>
+                      setTimeout(() => setIsManageDropdownOpen(false), 100)
+                    }
                   >
-                    <span className="mr-2"><FiSettings /></span>
+                    <span className="mr-2">
+                      <FiSettings />
+                    </span>
                     Manage
                     <motion.span
                       animate={{ rotate: isManageDropdownOpen ? 180 : 0 }}
@@ -218,10 +269,10 @@ const Navbar = () => {
                       <FiChevronDown />
                     </motion.span>
                   </button>
-                  
+
                   <AnimatePresence>
                     {isManageDropdownOpen && (
-                      <motion.div 
+                      <motion.div
                         variants={dropdownVariants}
                         initial="hidden"
                         animate="visible"
@@ -238,8 +289,66 @@ const Navbar = () => {
                               setIsManageDropdownOpen(false);
                             }}
                           >
-                            <span className="mr-2 text-gray-500">{item.icon}</span>
-                            {item.label.replace('Manage ', '')}
+                            <span className="mr-2 text-gray-500">
+                              {item.icon}
+                            </span>
+                            {item.label.replace("Manage ", "")}
+                          </motion.button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              {/* Create dropdown - only for superuser and admin */}
+              {createItems.length > 0 && (
+                <div className="relative ">
+                  <button
+                    className="px-3 py-2 rounded hover:bg-gray-100 flex items-center cursor-pointer"
+                    onClick={() =>
+                      setIsCreateDropdownOpen(!isCreateDropdownOpen)
+                    }
+                    onBlur={() =>
+                      setTimeout(() => setIsCreateDropdownOpen(false), 100)
+                    }
+                  >
+                    <span className="mr-2">
+                      <FiPlus />
+                    </span>
+                    Create
+                    <motion.span
+                      animate={{ rotate: isCreateDropdownOpen ? 180 : 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="ml-1"
+                    >
+                      <FiChevronDown />
+                    </motion.span>
+                  </button>
+
+                  <AnimatePresence>
+                    {isCreateDropdownOpen && (
+                      <motion.div
+                        variants={dropdownVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        className="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200"
+                      >
+                        {createItems.map((item, index) => (
+                          <motion.button
+                            key={index}
+                            variants={menuItemVariants}
+                            className="cursor-pointer w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-items-start"
+                            onClick={() => {
+                              navigate(item.path);
+                              setIsCreateDropdownOpen(false);
+                            }}
+                          >
+                            <span className="mr-2 text-gray-500">
+                              {item.icon}
+                            </span>
+                            {item.label.replace("Create ", "")}
                           </motion.button>
                         ))}
                       </motion.div>
@@ -249,16 +358,18 @@ const Navbar = () => {
               )}
 
               {/* Other regular items */}
-              {regularItems.filter(item => item.label !== "Dashboard").map((item, index) => (
-                <button
-                  key={index}
-                  className="px-3 py-2 rounded hover:bg-gray-100 flex items-center"
-                  onClick={() => navigate(item.path)}
-                >
-                  <span className="mr-2">{item.icon}</span>
-                  {item.label}
-                </button>
-              ))}
+              {regularItems
+                .filter((item) => item.label !== "Dashboard")
+                .map((item, index) => (
+                  <button
+                    key={index}
+                    className="px-3 py-2 rounded hover:bg-gray-100 flex items-center"
+                    onClick={() => navigate(item.path)}
+                  >
+                    <span className="mr-2">{item.icon}</span>
+                    {item.label}
+                  </button>
+                ))}
             </div>
 
             <div className="hidden md:block mr-5">
@@ -308,14 +419,14 @@ const Navbar = () => {
 
       <AnimatePresence>
         {isDrawerOpen && (
-          <motion.div 
+          <motion.div
             variants={overlayVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
             className="fixed inset-0 bg-black bg-opacity-50 z-50 md:hidden"
           >
-            <motion.div 
+            <motion.div
               variants={drawerVariants}
               initial="hidden"
               animate="visible"
@@ -324,7 +435,11 @@ const Navbar = () => {
             >
               <div className="flex flex-col h-full">
                 <div className="flex justify-between items-center p-4 border-b">
-                  <img src="/ishanya_logo.png" alt="Ishanya India" className="h-10" />
+                  <img
+                    src="/ishanya_logo.png"
+                    alt="Ishanya India"
+                    className="h-10"
+                  />
                   <button
                     className="btn btn-ghost btn-sm btn-circle"
                     onClick={() => setIsDrawerOpen(false)}
@@ -332,14 +447,15 @@ const Navbar = () => {
                     <FiX className="h-5 w-5" />
                   </button>
                 </div>
-                <motion.div 
+                <motion.div
                   className="flex-1 overflow-y-auto p-4"
                   variants={staggerChildren}
                   initial="hidden"
                   animate="visible"
                 >
                   <div className="flex flex-col space-y-2">
-                    {navItems.map((item, index) => (
+                    {/* Regular nav items */}
+                    {regularItems.map((item, index) => (
                       <motion.button
                         key={index}
                         variants={menuItemVariants}
@@ -353,6 +469,58 @@ const Navbar = () => {
                         {item.label}
                       </motion.button>
                     ))}
+
+                    {/* Manage items section */}
+                    {manageItems.length > 0 && (
+                      <>
+                        <div className="divider text-sm text-gray-500">
+                          Manage
+                        </div>
+                        {manageItems.map((item, index) => (
+                          <motion.button
+                            key={`manage-${index}`}
+                            variants={menuItemVariants}
+                            className="flex items-center p-3 rounded hover:bg-gray-100"
+                            onClick={() => {
+                              navigate(item.path);
+                              setIsDrawerOpen(false);
+                            }}
+                          >
+                            <span className="mr-3 text-gray-500">
+                              {item.icon}
+                            </span>
+                            {item.label.replace("Manage ", "")}
+                          </motion.button>
+                        ))}
+                      </>
+                    )}
+
+                    {/* Create items section */}
+                    {createItems.length > 0 && (
+                      <>
+                        <div className="divider text-sm text-gray-500">
+                          Create
+                        </div>
+                        {createItems.map((item, index) => (
+                          <motion.button
+                            key={`create-${index}`}
+                            variants={menuItemVariants}
+                            className="flex items-center p-3 rounded hover:bg-gray-100"
+                            onClick={() => {
+                              navigate(item.path);
+                              setIsDrawerOpen(false);
+                            }}
+                          >
+                            <span className="mr-3 text-gray-500">
+                              {item.icon}
+                            </span>
+                            {item.label.replace("Create ", "")}
+                          </motion.button>
+                        ))}
+                      </>
+                    )}
+
+                    <div className="divider text-sm text-gray-500">Account</div>
                     <motion.button
                       variants={menuItemVariants}
                       className="flex items-center p-3 rounded hover:bg-gray-100"

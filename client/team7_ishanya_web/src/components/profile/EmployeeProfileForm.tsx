@@ -1,3 +1,4 @@
+import { USER_ROLES } from "../../types";
 import {
   workLocationCollection,
   departmentCollection,
@@ -8,6 +9,8 @@ import {
   genderCollection,
 } from "../../formCollections";
 
+import { employeeSelfEditableFields } from "../../formCollections/employeeSelfEditableFields";
+
 interface EmployeeProfileFormProps {
   formData: any;
   handleInputChange: (
@@ -16,6 +19,7 @@ interface EmployeeProfileFormProps {
   isEditing: boolean;
   canEdit: boolean;
   onUpdate: () => void;
+  accessType: number; // Add accessType prop
 }
 
 const EmployeeProfileForm = ({
@@ -24,6 +28,7 @@ const EmployeeProfileForm = ({
   isEditing,
   canEdit,
   onUpdate,
+  accessType, // Receive accessType
 }: EmployeeProfileFormProps) => {
   // Custom handler for Select component
   const handleSelectChange = (name: string) => (value: string) => {
@@ -42,6 +47,24 @@ const EmployeeProfileForm = ({
     if (onUpdate && formData.Employee_ID) {
       onUpdate();
     }
+  };
+
+  // Check if current user is the employee viewing their own profile
+  const isSelfEditing = accessType === USER_ROLES.EDUCATOR && 
+                        canEdit && 
+                        accessType < USER_ROLES.ADMIN;
+
+  // Function to determine if a field is editable by the current user
+  const isFieldEditable = (fieldName: string) => {
+    if (!isEditing) return false;
+    
+    // Admin and superuser can edit all fields
+    if (accessType >= USER_ROLES.ADMIN) return true;
+    
+    // Regular employees can only edit specific fields in their own profile
+    if (isSelfEditing && employeeSelfEditableFields.includes(fieldName)) return true;
+    
+    return false;
   };
 
   return (
@@ -72,7 +95,7 @@ const EmployeeProfileForm = ({
             value={formData.Name || ""}
             onChange={handleInputChange}
             className="input input-bordered w-full"
-            readOnly={!isEditing || !canEdit}
+            readOnly={!isFieldEditable("Name")}
           />
         </div>
       </div>
@@ -86,7 +109,7 @@ const EmployeeProfileForm = ({
             className="select select-bordered w-full"
             value={formData.Gender || ""}
             onChange={(e) => handleSelectChange("Gender")(e.target.value)}
-            disabled={!isEditing || !canEdit}
+            disabled={!isFieldEditable("Gender")}
           >
             <option value="" disabled>
               Select gender
@@ -111,7 +134,7 @@ const EmployeeProfileForm = ({
             value={formData.Photo || ""}
             onChange={handleInputChange}
             className="input input-bordered w-full"
-            readOnly={!isEditing || !canEdit}
+            readOnly={!isFieldEditable("Photo")}
           />
         </div>
       </div>
@@ -125,7 +148,7 @@ const EmployeeProfileForm = ({
             className="select select-bordered w-full"
             value={formData.Designation || ""}
             onChange={(e) => handleSelectChange("Designation")(e.target.value)}
-            disabled={!isEditing || !canEdit}
+            disabled={!isFieldEditable("Designation")}
           >
             <option value="" disabled>
               Select designation
@@ -148,7 +171,7 @@ const EmployeeProfileForm = ({
             className="select select-bordered w-full"
             value={formData.Department || ""}
             onChange={(e) => handleSelectChange("Department")(e.target.value)}
-            disabled={!isEditing || !canEdit}
+            disabled={!isFieldEditable("Department")}
           >
             <option value="" disabled>
               Select department
@@ -173,7 +196,7 @@ const EmployeeProfileForm = ({
             onChange={(e) =>
               handleSelectChange("Employment_Type")(e.target.value)
             }
-            disabled={!isEditing || !canEdit}
+            disabled={!isFieldEditable("Employment_Type")}
           >
             <option value="" disabled>
               Select employment type
@@ -196,7 +219,7 @@ const EmployeeProfileForm = ({
             className="select select-bordered w-full"
             value={formData.Program || ""}
             onChange={(e) => handleSelectChange("Program")(e.target.value)}
-            disabled={!isEditing || !canEdit}
+            disabled={!isFieldEditable("Program")}
           >
             <option value="" disabled>
               Select program
@@ -221,7 +244,7 @@ const EmployeeProfileForm = ({
             value={formData.Email || ""}
             onChange={handleInputChange}
             className="input input-bordered w-full"
-            readOnly={!isEditing || !canEdit}
+            readOnly={!isFieldEditable("Email")}
           />
         </div>
       </div>
@@ -237,7 +260,7 @@ const EmployeeProfileForm = ({
             value={formData.Phone || ""}
             onChange={handleInputChange}
             className="input input-bordered w-full"
-            readOnly={!isEditing || !canEdit}
+            readOnly={!isFieldEditable("Phone")}
           />
         </div>
       </div>
@@ -253,7 +276,7 @@ const EmployeeProfileForm = ({
             value={formData.Date_of_Birth || ""}
             onChange={handleInputChange}
             className="input input-bordered w-full"
-            readOnly={!isEditing || !canEdit}
+            readOnly={!isFieldEditable("Date_of_Birth")}
           />
         </div>
       </div>
@@ -269,7 +292,7 @@ const EmployeeProfileForm = ({
             value={formData.Date_of_Joining || ""}
             onChange={handleInputChange}
             className="input input-bordered w-full"
-            readOnly={!isEditing || !canEdit}
+            readOnly={!isFieldEditable("Date_of_Joining")}
           />
         </div>
       </div>
@@ -285,7 +308,7 @@ const EmployeeProfileForm = ({
             value={formData.Date_of_Leaving || ""}
             onChange={handleInputChange}
             className="input input-bordered w-full"
-            readOnly={!isEditing || !canEdit}
+            readOnly={!isFieldEditable("Date_of_Leaving")}
           />
         </div>
       </div>
@@ -299,7 +322,7 @@ const EmployeeProfileForm = ({
             className="select select-bordered w-full"
             value={formData.Status || ""}
             onChange={(e) => handleSelectChange("Status")(e.target.value)}
-            disabled={!isEditing || !canEdit}
+            disabled={!isFieldEditable("Status")}
           >
             <option value="" disabled>
               Select status
@@ -324,7 +347,7 @@ const EmployeeProfileForm = ({
             value={formData.Tenure || ""}
             onChange={handleInputChange}
             className="input input-bordered w-full"
-            readOnly={!isEditing || !canEdit}
+            readOnly={!isFieldEditable("Tenure")}
           />
         </div>
       </div>
@@ -340,7 +363,7 @@ const EmployeeProfileForm = ({
             onChange={(e) =>
               handleSelectChange("Work_Location")(e.target.value)
             }
-            disabled={!isEditing || !canEdit}
+            disabled={!isFieldEditable("Work_Location")}
           >
             <option value="" disabled>
               Select work location
@@ -365,7 +388,7 @@ const EmployeeProfileForm = ({
             value={formData.Emergency_Contact_Name || ""}
             onChange={handleInputChange}
             className="input input-bordered w-full"
-            readOnly={!isEditing || !canEdit}
+            readOnly={!isFieldEditable("Emergency_Contact_Name")}
           />
         </div>
       </div>
@@ -381,7 +404,7 @@ const EmployeeProfileForm = ({
             value={formData.Emergency_Contact_Number || ""}
             onChange={handleInputChange}
             className="input input-bordered w-full"
-            readOnly={!isEditing || !canEdit}
+            readOnly={!isFieldEditable("Emergency_Contact_Number")}
           />
         </div>
       </div>
@@ -397,7 +420,7 @@ const EmployeeProfileForm = ({
             value={formData.Blood_Group || ""}
             onChange={handleInputChange}
             className="input input-bordered w-full"
-            readOnly={!isEditing || !canEdit}
+            readOnly={!isFieldEditable("Blood_Group")}
           />
         </div>
       </div>
@@ -405,9 +428,9 @@ const EmployeeProfileForm = ({
       {/* Update Button */}
       <div className="col-span-1 md:col-span-2">
         <button
-          className={`btn btn-primary w-full mt-4 ${!isEditing || !canEdit ? "btn-disabled" : ""}`}
+          className={`btn btn-primary w-full mt-4 ${!isEditing ? "btn-disabled" : ""}`}
           onClick={handleUpdateClick}
-          disabled={!isEditing || !canEdit}
+          disabled={!isEditing}
         >
           Update Employee Data
         </button>

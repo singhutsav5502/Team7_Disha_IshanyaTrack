@@ -14,7 +14,6 @@ const AssignEducatorPage = () => {
     Educator_Name: "",
     Photo: "",
     Designation: "",
-    Department: "",
     Email: "",
     Phone: "",
     Date_of_Birth: "",
@@ -56,7 +55,6 @@ const AssignEducatorPage = () => {
         Educator_Name: selectedEmployee.Name,
         Photo: selectedEmployee.Photo || "",
         Designation: selectedEmployee.Designation,
-        Department: selectedEmployee.Department,
         Email: selectedEmployee.Email,
         Phone: selectedEmployee.Phone,
         Date_of_Birth: selectedEmployee.Date_of_Birth,
@@ -190,21 +188,6 @@ const AssignEducatorPage = () => {
                     type="text"
                     name="Designation"
                     value={formData.Designation}
-                    className="input input-bordered w-full"
-                    readOnly
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div className="form-control w-full">
-                  <label className="label">
-                    <span className="label-text">Department</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="Department"
-                    value={formData.Department}
                     className="input input-bordered w-full"
                     readOnly
                   />

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getProgramData,
-  getProgramMapping,
   refetchProgramData,
 } from "../store/slices/authSlice";
 import { toast } from "react-toastify";
@@ -18,7 +17,7 @@ import {
 const ManageProgramsPage: React.FC = () => {
   const dispatch = useDispatch();
   const programs = useSelector(getProgramData);
-  const programMapping = useSelector(getProgramMapping);
+  // const programMapping = useSelector(getProgramMapping);
 
   const [students, setStudents] = useState<any>(null);
   const [educators, setEducators] = useState<any>(null);
@@ -27,7 +26,7 @@ const ManageProgramsPage: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState("");
   const [selectedEducator, setSelectedEducator] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  
   useEffect(() => {
     // Fetch students and educators
     const loadData = async () => {
@@ -53,7 +52,7 @@ const ManageProgramsPage: React.FC = () => {
       setNewProgramName("");
       dispatch(refetchProgramData());
     } catch (err) {
-      toast.error("Failed to add program");
+      toast.error(`Failed to add program ${err}`);
     } finally {
       setIsLoading(false);
     }
@@ -68,7 +67,7 @@ const ManageProgramsPage: React.FC = () => {
       dispatch(refetchProgramData());
       if (selectedProgram === programId) setSelectedProgram(null);
     } catch (err) {
-      toast.error("Failed to remove program");
+      toast.error(`Failed to remove program ${err}`);
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +108,6 @@ const ManageProgramsPage: React.FC = () => {
       setIsLoading(false);
     }
   };
-
   const currentProgram = programs.find((p) => p.Program_ID === selectedProgram);
 
   return (
@@ -252,7 +250,7 @@ const ManageProgramsPage: React.FC = () => {
                           key={educator.Employee_ID}
                           value={educator.Employee_ID}
                         >
-                          {educator.Name}
+                          {educator.Educator_Name}
                         </option>
                       ))}
                     </select>
@@ -290,7 +288,7 @@ const ManageProgramsPage: React.FC = () => {
                         <li key={educatorId}>
                           {
                             educators.find((e) => e.Employee_ID === educatorId)
-                              ?.Name
+                              ?.Educator_Name
                           }{" "}
                           ({educatorId})
                         </li>

@@ -8,7 +8,7 @@ const UnauthorizedPage = () => {
       <div className="flex flex-col items-center justify-center text-center gap-6 max-w-md mx-auto">
         <div className="bg-error/10 p-4 rounded-full mb-2">
           <img 
-            src="/assets/images/lock-icon.svg" 
+            src="/lock-icon.svg" 
             alt="Unauthorized access" 
             className="w-24 h-24"
           />

@@ -12,22 +12,22 @@ import {
 import { fetchEducatorMapping, fetchStudents } from "../api";
 
 const ManageStudentsPage: React.FC = () => {
-  const [students, setStudents] = useState<any[]>([]);
-  const [filteredStudents, setFilteredStudents] = useState<any[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
-  const [educatorMapping, setEducatorMapping] = useState<any>({});
-  const [filters, setFilters] = useState<any>({});
-  const [sortField, setSortField] = useState<any>("S_ID");
+  const [educatorMapping, setEducatorMapping] = useState<Record<string, string>>({});
+  const [filters, setFilters] = useState<Partial<Student>>({});
+  const [sortField, setSortField] = useState<keyof Student>("S_ID");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const navigate = useNavigate();
   const userType = useSelector(getUserType);
   const userId = useSelector(getUserId);
-  const PROGRAMS = useSelector(getProgramMapping);
-  console.log(PROGRAMS);
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
         const studentsData = await fetchStudents();
+        const educatorMappingData = await fetchEducatorMapping();
 
         // Filter students based on user role
         let filteredData = studentsData;
@@ -42,19 +42,19 @@ const ManageStudentsPage: React.FC = () => {
 
         setStudents(filteredData);
         setFilteredStudents(filteredData);
-
-        const educatorMappingData = await fetchEducatorMapping();
-        setEducatorMapping(educatorMappingData);
-
+        setEducatorMapping(educatorMappingData.reduce((acc, curr) => {
+          acc[curr.Employee_ID] = curr.Educator_Name;
+          return acc;
+        }, {} as Record<string, string>));
         setLoading(false);
       } catch (error) {
-        toast.error(`Failed to fetch data with error: ${error}`);
+        toast.error(`Failed to fetch data: ${error}`);
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [userType, userId, navigate]);
+  }, [userType, userId]);
 
   useEffect(() => {
     const filtered = students.filter((student) =>
@@ -62,9 +62,7 @@ const ManageStudentsPage: React.FC = () => {
         if (!value) return true;
         const studentValue = student[key as keyof Student];
         return typeof studentValue === "string"
-          ? studentValue
-              ?.toLowerCase()
-              .includes((value as string).toLowerCase())
+          ? studentValue.toLowerCase().includes((value as string).toLowerCase())
           : studentValue === value;
       })
     );
@@ -146,9 +144,7 @@ const ManageStudentsPage: React.FC = () => {
                 type="text"
                 placeholder="Enter educator ID"
                 value={filters.Primary_E_ID || ""}
-                onChange={(e) =>
-                  handleFilterChange("Primary_E_ID", e.target.value)
-                }
+                onChange={(e) => handleFilterChange("Primary_E_ID", e.target.value)}
                 className="input input-bordered w-full"
               />
             </div>
@@ -173,10 +169,7 @@ const ManageStudentsPage: React.FC = () => {
           <table className="table w-full">
             <thead>
               <tr>
-                <th
-                  className="cursor-pointer"
-                  onClick={() => toggleSortDirection("S_ID")}
-                >
+                <th className="cursor-pointer" onClick={() => toggleSortDirection("S_ID")}>
                   <div className="flex items-center">
                     ID
                     {sortField === "S_ID" && (
@@ -186,10 +179,7 @@ const ManageStudentsPage: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th
-                  className="cursor-pointer"
-                  onClick={() => toggleSortDirection("Fname")}
-                >
+                <th className="cursor-pointer" onClick={() => toggleSortDirection("Fname")}>
                   <div className="flex items-center">
                     Name
                     {sortField === "Fname" && (
@@ -199,23 +189,7 @@ const ManageStudentsPage: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th
-                  className="cursor-pointer"
-                  onClick={() => toggleSortDirection("Program_ID")}
-                >
-                  <div className="flex items-center">
-                    Program
-                    {sortField === "Program_ID" && (
-                      <span className="ml-1">
-                        {sortDirection === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </div>
-                </th>
-                <th
-                  className="cursor-pointer"
-                  onClick={() => toggleSortDirection("Status")}
-                >
+                <th className="cursor-pointer" onClick={() => toggleSortDirection("Status")}>
                   <div className="flex items-center">
                     Status
                     {sortField === "Status" && (
@@ -225,10 +199,7 @@ const ManageStudentsPage: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th
-                  className="cursor-pointer"
-                  onClick={() => toggleSortDirection("Primary_E_ID")}
-                >
+                <th className="cursor-pointer" onClick={() => toggleSortDirection("Primary_E_ID")}>
                   <div className="flex items-center">
                     Primary Educator
                     {sortField === "Primary_E_ID" && (
@@ -238,10 +209,7 @@ const ManageStudentsPage: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th
-                  className="cursor-pointer"
-                  onClick={() => toggleSortDirection("Secondary_E_ID")}
-                >
+                <th className="cursor-pointer" onClick={() => toggleSortDirection("Secondary_E_ID")}>
                   <div className="flex items-center">
                     Secondary Educator
                     {sortField === "Secondary_E_ID" && (
@@ -261,9 +229,6 @@ const ManageStudentsPage: React.FC = () => {
                     <td>{student.S_ID}</td>
                     <td>{`${student.Fname} ${student.Lname}`}</td>
                     <td>
-                      {PROGRAMS[student.Program_ID] || student.Program_ID}
-                    </td>
-                    <td>
                       <span
                         className={`badge ${
                           student.Status === "Active"
@@ -274,14 +239,8 @@ const ManageStudentsPage: React.FC = () => {
                         {student.Status}
                       </span>
                     </td>
-                    <td>
-                      {educatorMapping[student.Primary_E_ID] ||
-                        student.Primary_E_ID}
-                    </td>
-                    <td>
-                      {educatorMapping[student.Secondary_E_ID] ||
-                        student.Secondary_E_ID}
-                    </td>
+                    <td>{educatorMapping[student.Primary_E_ID] || student.Primary_E_ID}</td>
+                    <td>{educatorMapping[student.Secondary_E_ID] || student.Secondary_E_ID}</td>
                     <td className="text-center">
                       <button
                         className="btn btn-ghost btn-sm text-primary"
@@ -295,7 +254,7 @@ const ManageStudentsPage: React.FC = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="text-center py-4">
+                  <td colSpan={6} className="text-center py-4">
                     No students found
                   </td>
                 </tr>

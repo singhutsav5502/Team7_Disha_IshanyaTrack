@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
-import { fetchProgramData , login } from '../../api'
+import { fetchProgramData, login } from '../../api'
+import { toast } from 'react-toastify'
 
 interface AuthState {
   isAuthenticated: boolean
@@ -78,11 +79,14 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action: PayloadAction<any>) => {
         state.loading = false
-        state.isAuthenticated = true;
-        state.userType = action.payload.Type;
-        state.userId = action.payload.id;
-        state.programData = action.payload.programData;
-        state.error = null;
+        if (action.payload.Authenticated == false) toast.error("Failed to login");
+        else {
+          state.isAuthenticated = action.payload.Authenticated;
+          state.userType = action.payload.Type;
+          state.userId = action.payload.id;
+          state.programData = action.payload.programData;
+          state.error = null;
+        }
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false
@@ -124,7 +128,7 @@ export const getProgramData = (state: { auth: AuthState }) => state.auth.program
 export const getProgramMapping = (state: { auth: AuthState }) => {
   const programData = state.auth.programData || [];
   if (!Array.isArray(programData)) {
-    return []; 
+    return [];
   }
   return state.auth.programData.reduce((mapping, program) => {
     mapping[program.Program_ID] = program.Program_Name;

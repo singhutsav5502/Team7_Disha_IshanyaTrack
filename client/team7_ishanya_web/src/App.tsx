@@ -11,8 +11,14 @@ import ManageStudentsPage from "./pages/ManageStudentsPage";
 import ManageEmployeesPage from "./pages/ManageEmployeesPage";
 import ManageProgramsPage from "./pages/ManageProgramsPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
+import CreateStudentPage from "./pages/Create/CreateStudent";
+import CreateEmployeePage from "./pages/Create/CreateEmployee";
+import CreateEducatorPage from "./pages/Create/CreateEducator";
+import ManagePermission from "./pages/ManagePermission";
+import MyStudents from "./pages/MyStudents";
 import { USER_ROLES } from "./types";
 import Navbar from "./components/Navbar";
+import ContactQueriesPage from "./pages/ContactQueriesPage";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -37,7 +43,28 @@ function App() {
           </ProtectedRoute>
         }
       />
-
+      <Route
+        path="/manage/queries"
+        element={
+          <ProtectedRoute requiredRole={USER_ROLES.ADMIN}>
+            <>
+              <Navbar />
+              <ContactQueriesPage />
+            </>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my_students"
+        element={
+          <ProtectedRoute requiredRole={USER_ROLES.EDUCATOR}>
+            <>
+              <Navbar />
+              <MyStudents />
+            </>
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/profile/:id"
         element={
@@ -80,6 +107,50 @@ function App() {
             <>
               <Navbar />
               <ManageProgramsPage />
+            </>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/manage/permissions"
+        element={
+          <ProtectedRoute requiredRole={USER_ROLES.SUPERUSER}>
+            <>
+              <Navbar />
+              <ManagePermission />
+            </>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/create/student"
+        element={
+          <ProtectedRoute requiredRole={USER_ROLES.ADMIN}>
+            <>
+              <Navbar />
+              <CreateStudentPage />
+            </>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/create/employee"
+        element={
+          <ProtectedRoute requiredRole={USER_ROLES.ADMIN}>
+            <>
+              <Navbar />
+              <CreateEmployeePage />
+            </>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/create/educator"
+        element={
+          <ProtectedRoute requiredRole={USER_ROLES.ADMIN}>
+            <>
+              <Navbar />
+              <CreateEducatorPage />
             </>
           </ProtectedRoute>
         }
