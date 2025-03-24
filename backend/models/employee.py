@@ -14,24 +14,28 @@ def get_employee_by_id_model(employee_id):
     return employee
 
 def get_all_employees():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
 
-    query = """
-        SELECT
-            Employee_ID, Name, Gender, Designation, Department, Employment_Type,
-            Email, Phone, Date_of_Birth, Date_of_Joining, Date_of_Leaving,
-            Status, Tenure, Work_Location, Emergency_Contact_Name,
-            Emergency_Contact_Number, Blood_Group
-        FROM Employees;
-    """
-    cursor.execute(query)
-    employees = cursor.fetchall()
+        query = """
+            SELECT
+                Employee_ID, Name, Gender, Designation, Department, Employment_Type,
+                Email, Phone, Date_of_Birth, Date_of_Joining, Date_of_Leaving,
+                Status, Tenure, Work_Location, Emergency_Contact_Name,
+                Emergency_Contact_Number, Blood_Group
+            FROM Employees;
+        """
+        cursor.execute(query)
+        employees = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
+        cursor.close()
+        conn.close()
 
-    return employees
+        return employees
+    
+    except Exception as e:
+        print(e)
 
 def update_employee(data, emp_id):
     update_fields = [

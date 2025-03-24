@@ -8,13 +8,13 @@ from routes import auth, student, employee
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'fallback-secret')
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'fallback-secret')
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 app.register_blueprint(auth.auth_bp)
 app.register_blueprint(student.student_bp)
-app.register_blueprint(employee.employee_btp)
+app.register_blueprint(employee.employee_bp)
 
 
 @app.route('/')

@@ -1,5 +1,4 @@
 from models.db_connect import get_db_connection
-from flask import jsonify
 
 def get_student_id(student_id):
     conn = get_db_connection()

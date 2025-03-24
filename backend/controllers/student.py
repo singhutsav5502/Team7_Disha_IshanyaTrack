@@ -21,7 +21,6 @@ def get_student_by_id():
     
 def get_students():
     try:
-
         result = get_all_students()
         return jsonify(result), 200
 

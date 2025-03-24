@@ -22,8 +22,7 @@ def get_employee_by_id():
 def get_employees():
     try:
         employees = get_all_employees()
-
-        return jsonify(employees)
+        return jsonify(employees), 200
 
     except Exception as e:
         print("Error fetching employees:", e)
