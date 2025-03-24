@@ -21,6 +21,7 @@ import Navbar from "./components/Navbar";
 import ContactQueriesPage from "./pages/Manage/ContactQueriesPage";
 import BroadcastPage from "./pages/BroadcastPage";
 import ChangePasswordPage from "./pages/auth/ChangePassword";
+import ReportsPage from "./pages/Reports";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -66,7 +67,17 @@ function App() {
           </ProtectedRoute>
         }
       />
-
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute requiredRole={USER_ROLES.STUDENT}>
+            <>
+              <Navbar />
+              <ReportsPage />
+            </>
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/manage/queries"
         element={

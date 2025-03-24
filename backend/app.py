@@ -1230,3 +1230,105 @@ def update_password():
     except Exception as e:
         print("Error updating password:", e)
         return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/reports', methods=['POST'])
+def get_reports():
+    try:
+        data = request.get_json()
+        user_id = data.get('userId')
+        user_type = data.get('userType')
+
+        if not user_id or user_type is None:
+            return jsonify({'error': 'userId and userType are required in request body'}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query = ''
+        params = []
+
+        if user_type == 0:
+            query = 'SELECT * FROM Report WHERE Student_ID = %s'
+            params = [user_id]
+        elif user_type == 1:
+            query = '''
+                SELECT r.*
+                FROM Report r
+                JOIN Student s ON r.Student_ID = s.S_ID
+                WHERE s.Primary_E_ID = %s OR s.Secondary_E_ID = %s
+            '''
+            params = [user_id, user_id]
+        elif user_type >= 2:
+            query = 'SELECT * FROM Report'
+        else:
+            return jsonify({'error': 'Unauthorized access'}), 403
+
+        cursor.execute(query, params)
+        reports = cursor.fetchall()
+
+        if user_type >= 3:
+            cursor.execute('SELECT S_ID, Fname, Lname FROM Student')
+            students = {s['S_ID']: f"{s['Fname']} {s['Lname']}" for s in cursor.fetchall()}
+            for report in reports:
+                report['StudentName'] = students.get(report['Student_ID'], 'Unknown')
+
+        cursor.close()
+        conn.close()
+
+        return jsonify(reports)
+
+    except Exception as e:
+        error_details = {
+            'error': 'Failed to fetch reports',
+            'error_type': type(e).__name__,
+            'error_message': str(e),
+            'error_details': repr(e)
+        }
+        print("Error fetching reports:", error_details)
+        return jsonify(error_details), 500
+
+
+@app.route('/reports/add', methods=['POST'])
+def add_report():
+    try:
+        data = request.get_json()
+        student_id = data.get('studentId')
+        quarter = data.get('quarter')
+        report_url = data.get('reportUrl')
+
+        if not student_id or not quarter or not report_url:
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Check if student exists
+        cursor.execute("SELECT * FROM Student WHERE S_ID = %s", (student_id,))
+        if not cursor.fetchone():
+            cursor.close()
+            conn.close()
+            return jsonify({'error': 'Student not found'}), 404
+
+        # Insert or update report
+        query = """
+            INSERT INTO Report (Student_ID, Quarter, Report_URL)
+            VALUES (%s, %s, %s)
+            ON DUPLICATE KEY UPDATE Report_URL = %s
+        """
+        cursor.execute(query, (student_id, quarter, report_url, report_url))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({'message': 'Report added successfully'}), 201
+
+    except Exception as e:
+        error_details = {
+            'error': 'Failed to add report',
+            'error_type': type(e).__name__,
+            'error_message': str(e),
+            'error_details': repr(e)
+        }
+        print("Error adding report:", error_details)
+        return jsonify(error_details), 500
