@@ -77,8 +77,7 @@ const ReportsPage = () => {
       fetchData();
     }
   }, [userId, userType]);
-  console.log(reports);
-  // Handle search
+    // Handle search
   useEffect(() => {
     if (searchTerm.trim() === "") {
       setFilteredReports(reports);
