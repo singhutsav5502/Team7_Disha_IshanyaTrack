@@ -71,8 +71,7 @@ export interface Performance {
 export interface Report {
   Report_ID: number;
   Student_ID: string;
-  Report_File: Blob;
-  Upload_Date: string;
+  Report_File: string;
 }
 
 export interface Program {

@@ -1,4 +1,4 @@
-import  { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
@@ -6,7 +6,6 @@ import {
   primaryDiagnosisCollection,
   comorbidityCollection,
   enrollmentYearCollection,
-  programCollection,
   timingsCollection,
   daysOfWeekCollection,
   sessionTypeCollection,
@@ -75,7 +74,6 @@ const CreateStudentPage = () => {
         <div className="card-body">
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             
               <div>
                 <div className="form-control w-full">
                   <label className="label">
@@ -305,21 +303,45 @@ const CreateStudentPage = () => {
                   <label className="label">
                     <span className="label-text">Days of Week</span>
                   </label>
-                  <select
-                    className="select select-bordered w-full"
-                    name="Days_of_Week"
-                    value={formData.Days_of_Week}
-                    onChange={handleInputChange}
-                  >
-                    <option value="" disabled>
-                      Select days
-                    </option>
+                  <div className="border rounded-lg p-2 grid grid-cols-3 gap-2">
                     {daysOfWeekCollection.items.map((item) => (
-                      <option key={item.value} value={item.value}>
-                        {item.label}
-                      </option>
+                      <div key={item.value} className="form-control">
+                        <label className="cursor-pointer label justify-start">
+                          <input
+                            type="checkbox"
+                            className="checkbox checkbox-primary mr-2"
+                            checked={formData.Days_of_Week?.split(
+                              ", "
+                            ).includes(item.value)}
+                            onChange={(e) => {
+                              const currentValues = formData.Days_of_Week
+                                ? formData.Days_of_Week.split(", ")
+                                : [];
+                              let newValues;
+
+                              if (e.target.checked) {
+                                newValues = [...currentValues, item.value];
+                              } else {
+                                newValues = currentValues.filter(
+                                  (val) => val !== item.value
+                                );
+                              }
+
+                              const syntheticEvent = {
+                                target: {
+                                  name: "Days_of_Week",
+                                  value: newValues.join(", "),
+                                },
+                              } as React.ChangeEvent<HTMLSelectElement>;
+
+                              handleInputChange(syntheticEvent);
+                            }}
+                          />
+                          <span className="label-text">{item.label}</span>
+                        </label>
+                      </div>
                     ))}
-                  </select>
+                  </div>
                 </div>
               </div>
 

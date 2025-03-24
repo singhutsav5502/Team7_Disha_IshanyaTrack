@@ -47,16 +47,16 @@ const StudentProfileForm = ({
     }
   };
 
-  const isStudent = accessType  === USER_ROLES.STUDENT;
+  const isStudent = accessType === USER_ROLES.STUDENT;
 
   // Function to determine if a field is editable by the current user
   const isFieldEditable = (fieldName: string) => {
     if (!isEditing) return false;
-    if (!isStudent && canEdit && accessType>USER_ROLES.EDUCATOR) return true;
+    if (!isStudent && canEdit && accessType > USER_ROLES.EDUCATOR) return true;
     if (isStudent && studentEditableFields.includes(fieldName)) return true;
     return false;
   };
-  canEdit = canEdit &&  (!isStudent && accessType>USER_ROLES.EDUCATOR);
+  canEdit = canEdit && !isStudent && accessType > USER_ROLES.EDUCATOR;
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
@@ -288,53 +288,6 @@ const StudentProfileForm = ({
           </select>
         </div>
       </div>
-            {/* TODO: QUERY TABLE FOR STUDENT -> PROGRAM map */}
-      {/* <div>
-        <div className="form-control w-full">
-          <label className="label">
-            <span className="label-text">Program</span>
-          </label>
-          <select
-            className="select select-bordered w-full"
-            value={formData.Program_ID || ""}
-            onChange={(e) => handleSelectChange("Program_ID")(e.target.value)}
-            disabled={!canEdit}
-          >
-            <option value="" disabled>
-              Select program
-            </option>
-            {programCollection.items.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div>
-        <div className="form-control w-full">
-          <label className="label">
-            <span className="label-text">Program 2</span>
-          </label>
-          <select
-            className="select select-bordered w-full"
-            value={formData.Program2_ID || ""}
-            onChange={(e) => handleSelectChange("Program2_ID")(e.target.value)}
-            disabled={!canEdit}
-          >
-            <option value="" disabled>
-              Select secondary program
-            </option>
-            {programCollection.items.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div> */}
-
       <div>
         <div className="form-control w-full">
           <label className="label">
@@ -357,27 +310,51 @@ const StudentProfileForm = ({
           </select>
         </div>
       </div>
-
       <div>
         <div className="form-control w-full">
           <label className="label">
             <span className="label-text">Days of Week</span>
           </label>
-          <select
-            className="select select-bordered w-full"
-            value={formData.Days_of_Week || ""}
-            onChange={(e) => handleSelectChange("Days_of_Week")(e.target.value)}
-            disabled={!canEdit}
-          >
-            <option value="" disabled>
-              Select days
-            </option>
+          <div className="border rounded-lg p-2 grid grid-cols-2 gap-2">
             {daysOfWeekCollection.items.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
+              <div key={item.value} className="form-control">
+                <label className="cursor-pointer label justify-start">
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-primary mr-2"
+                    checked={formData.Days_of_Week?.split(", ").includes(
+                      item.value
+                    )}
+                    onChange={(e) => {
+                      const currentValues = formData.Days_of_Week
+                        ? formData.Days_of_Week.split(", ")
+                        : [];
+                      let newValues;
+
+                      if (e.target.checked) {
+                        newValues = [...currentValues, item.value];
+                      } else {
+                        newValues = currentValues.filter(
+                          (val) => val !== item.value
+                        );
+                      }
+
+                      const syntheticEvent = {
+                        target: {
+                          name: "Days_of_Week",
+                          value: newValues.join(", "),
+                        },
+                      } as React.ChangeEvent<HTMLInputElement>;
+
+                      handleInputChange(syntheticEvent);
+                    }}
+                    disabled={!canEdit}
+                  />
+                  <span className="label-text">{item.label}</span>
+                </label>
+              </div>
             ))}
-          </select>
+          </div>
         </div>
       </div>
 

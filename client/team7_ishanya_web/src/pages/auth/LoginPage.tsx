@@ -25,7 +25,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { loading, error, isAuthenticated } = useSelector(
+  const { isAuthenticated } = useSelector(
     (state: RootState) => state.auth
   );
   // If user is already authenticated, redirect to dashboard
