@@ -58,3 +58,53 @@ def update_employee(data, emp_id):
     conn.commit()
     cursor.close()
     conn.close()
+
+def insert_employee(employee_id, data):
+    employee_data = {
+        'Employee_ID': employee_id,
+        **data
+    }
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Insert into Employees table
+    fields = ', '.join(employee_data.keys())
+    placeholders = ', '.join(['%s'] * len(employee_data))
+    values = tuple(employee_data.values())
+
+    query = f"INSERT INTO Employees ({fields}) VALUES ({placeholders})"
+    cursor.execute(query, values)
+
+    # Add to auth table with standard password
+    standard_password = 'welcome123'  # generate dynamically while setting up email
+    cursor.execute(
+        "INSERT INTO auth (ID, pwd, type) VALUES (%s, %s, %s)",
+        (employee_id, standard_password, 1)  # Assuming 1 is the type for employees
+    )
+
+    # Add to Program_Employees table
+    program_id = data.get('Program_ID')
+    if program_id:
+        cursor.execute(
+            "INSERT INTO Program_Employees (Employee_ID, Program_ID) VALUES (%s, %s)",
+            (employee_id, program_id)
+        )
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def update_employee_role_model(employee_id, new_role_type):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Update the auth table
+    cursor.execute(
+        "UPDATE auth SET type = %s WHERE ID = %s",
+        (new_role_type, employee_id)
+    )
+
+    conn.commit()
+    cursor.close()
+    conn.close()

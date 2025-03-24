@@ -1,6 +1,36 @@
 from models.db_connect import get_db_connection
 import json
 
+def get_all_programs():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = "SELECT Program_ID, Program_Name FROM Programs"
+    cursor.execute(query)
+    programs = cursor.fetchall()
+
+    for program in programs:
+        program_id = program['Program_ID']
+
+        cursor.execute(
+            "SELECT Student_ID FROM Program_Students WHERE Program_ID = %s",
+            (program_id,)
+        )
+        student_results = cursor.fetchall()
+        program['Student_IDs'] = [result['Student_ID'] for result in student_results]
+
+        cursor.execute(
+            "SELECT Employee_ID FROM Program_Employees WHERE Program_ID = %s",
+            (program_id,)
+        )
+        employee_results = cursor.fetchall()
+        program['Employee_IDs'] = [result['Employee_ID'] for result in employee_results]
+
+    cursor.close()
+    conn.close()
+
+    return programs
+
 def insert_program(program_name):
     conn = get_db_connection()
     cursor = conn.cursor()

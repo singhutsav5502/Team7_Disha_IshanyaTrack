@@ -1,6 +1,15 @@
 from flask import request, jsonify
-from models.program import insert_program, delete_program, add_educator, add_student
+from models.program import get_all_programs, insert_program, delete_program, add_educator, add_student
 from mysql.connector import IntegrityError
+
+def get_programs():
+    try:
+        programs = get_all_programs()
+        return jsonify(programs), 200
+
+    except Exception as e:
+        print("Error adding program:", e)
+        return jsonify({'error': 'Internal server error'}), 500
 
 def add_program():
     try:

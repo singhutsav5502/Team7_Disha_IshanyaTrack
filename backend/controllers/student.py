@@ -1,5 +1,6 @@
-from models.student import get_student_id, get_all_students, update_student
+from models.student import get_student_id, get_all_students, update_student, insert_student
 from flask import jsonify, request
+import random, string
 
 def get_student_by_id():
     try:
@@ -42,5 +43,29 @@ def update_student_data():
 
     except Exception as e:
         print("Error updating student data:", e)
+        return jsonify({'error': 'Internal server error'}), 500
+    
+def create_new_student():
+    try:
+        data = request.get_json()
+
+        # Generate Student ID
+        student_id = 'S' + ''.join(random.choices(string.digits, k=5))
+
+        student_data = {
+            'S_ID': student_id,
+            **data
+        }
+
+        insert_student(student_id, student_data, data)
+
+        return jsonify({
+            'success': True,
+            'message': 'Student created successfully',
+            'student_id': student_id
+        }), 201
+
+    except Exception as e:
+        print("Error creating student:", e)
         return jsonify({'error': 'Internal server error'}), 500
         
