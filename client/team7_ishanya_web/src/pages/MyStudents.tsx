@@ -224,16 +224,10 @@ const MyStudentsPage = () => {
                       <td>{student.S_ID}</td>
                       <td>
                         <div className="flex items-center space-x-3">
-                          <div className="avatar">
-                            <div className="mask mask-squircle w-12 h-12">
-                              <img
-                                src={
-                                  student.Photo ||
-                                  "https://via.placeholder.com/40"
-                                }
-                                alt={`${student.Fname} ${student.Lname}`}
-                              />
-                            </div>
+                          <div className="flex items-center justify-center w-10 h-10 bg-primary text-primary-content rounded-full">
+                            <span className="text-xs font-bold">
+                             { `${student.Fname?.[0]}${student.Lname?.[0]}`}
+                            </span>
                           </div>
                           <div>
                             <div className="font-bold">
