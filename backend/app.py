@@ -880,18 +880,31 @@ def notify_multiple():
                 )
                 response = messaging.send(message)
                 successful_notifications.append({'student_id': student_id, 'message_id': response})
+            except messaging.UnregisteredError:
+                # Handle invalid/unregistered tokens
+                failed_notifications.append({'student_id': student_id, 'reason': 'Token is no longer valid'})
+                if student_id in user_tokens:
+                    del user_tokens[student_id]
+            except messaging.FirebaseError as e:
+                failed_notifications.append({'student_id': student_id, 'reason': f'Firebase error: {e.code}'})
             except Exception as e:
                 failed_notifications.append({'student_id': student_id, 'reason': str(e)})
 
         return jsonify({
             'success': True,
             'successful_notifications': successful_notifications,
-            'failed_notifications': failed_notifications
+            'failed_notifications': failed_notifications,
+            'summary': {
+                'total': len(student_ids),
+                'successful': len(successful_notifications),
+                'failed': len(failed_notifications)
+            }
         })
 
     except Exception as e:
         print("Error sending notifications:", e)
         return jsonify({'error': f'Failed to send notifications: {str(e)}'}), 500
+
 
 @app.route('/contact-query', methods=['POST'])
 def add_contact_query():
