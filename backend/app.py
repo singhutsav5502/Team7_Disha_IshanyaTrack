@@ -4,12 +4,14 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-from routes import auth, student, employee, educator, program
+from routes import auth, student, employee, educator, program, notif_tokens
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'fallback-secret')
 CORS(app, resources={r"/*": {"origins": "*"}})
+
+
 
 @app.before_request
 def handle_preflight():
@@ -26,6 +28,7 @@ app.register_blueprint(student.student_bp)
 app.register_blueprint(employee.employee_bp)
 app.register_blueprint(educator.educator_bp)
 app.register_blueprint(program.program_bp)
+app.register_blueprint(notif_tokens.notif_bp)
 
 
 @app.route('/')
