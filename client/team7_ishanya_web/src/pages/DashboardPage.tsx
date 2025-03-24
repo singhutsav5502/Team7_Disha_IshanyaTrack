@@ -349,7 +349,7 @@ const DashboardPage = () => {
               </button>
               <button
                 className="btn btn-warning h-24"
-                onClick={() => navigate("/my-reports")}
+                onClick={() => navigate("/reports")}
               >
                 <FiFileText className="w-6 h-6 mr-2" /> View My Reports
               </button>
