@@ -12,6 +12,7 @@ import {
   FiChevronDown,
   FiPlus,
   FiBell,
+  FiTool,
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserType, getUserId, logout } from "../store/slices/authSlice";
@@ -122,7 +123,11 @@ const Navbar = () => {
         { label: "My Reports", path: "/reports", icon: <FiFileText /> }
       );
     }
-
+    items.push({
+      label: "Change Password",
+      path: "/update-password",
+      icon: <FiTool />,
+    });
     return items;
   };
 

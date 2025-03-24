@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
-import { AppDispatch, RootState } from "../store";
-import { loginUser } from "../store/slices/authSlice";
+import { AppDispatch, RootState } from "../../store";
+import { loginUser } from "../../store/slices/authSlice";
 import { toast } from "react-toastify";
 import banner_bg from "/banner_bg.png"
 import banner_man from "/banner_man.png"
 import ishanya_logo from "/ishanya_logo.png"
-import { submitContactQuery } from "../api";
+import { submitContactQuery } from "../../api";
 
 const LoginPage = () => {
   const [id, setId] = useState("");

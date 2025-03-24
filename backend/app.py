@@ -1191,3 +1191,42 @@ def fetch_student_performance_by_quarter(student_id, quarter):
     return get_student_performance_by_quarter(student_id, quarter)
 
 
+@app.route('/update-password', methods=['POST'])
+def update_password():
+    try:
+        data = request.get_json()
+        user_id = data.get('userId')
+        current_password = data.get('currentPassword')
+        new_password = data.get('newPassword')
+        
+        if not user_id or not current_password or not new_password:
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # First verify the current password
+        query = "SELECT * FROM auth WHERE ID = %s AND pwd = %s"
+        cursor.execute(query, (user_id, current_password))
+        user = cursor.fetchone()
+        
+        if not user:
+            cursor.close()
+            conn.close()
+            return jsonify({'error': 'Current password is incorrect'}), 401
+        
+        # Update the password
+        update_query = "UPDATE auth SET pwd = %s WHERE ID = %s"
+        cursor.execute(update_query, (new_password, user_id))
+        conn.commit()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'message': 'Password updated successfully'
+        }), 200
+        
+    except Exception as e:
+        print("Error updating password:", e)
+        return jsonify({'error': 'Internal server error'}), 500

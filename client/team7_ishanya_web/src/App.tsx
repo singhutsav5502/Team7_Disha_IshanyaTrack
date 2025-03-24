@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "./store";
 import { verifyAuth } from "./store/slices/authSlice";
 import ProtectedRoute from "./components/ProtectedRoute";
-import LoginPage from "./pages/LoginPage";
+import LoginPage from "./pages/auth/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import DashboardPage from "./pages/DashboardPage";
 import ManageStudentsPage from "./pages/Manage/ManageStudentsPage";
@@ -20,6 +20,7 @@ import { USER_ROLES } from "./types";
 import Navbar from "./components/Navbar";
 import ContactQueriesPage from "./pages/Manage/ContactQueriesPage";
 import BroadcastPage from "./pages/BroadcastPage";
+import ChangePasswordPage from "./pages/auth/ChangePassword";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -32,7 +33,17 @@ function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
-
+      <Route
+        path="/update-password"
+        element={
+          <ProtectedRoute requiredRole={USER_ROLES.STUDENT}>
+            <>
+              <Navbar />
+              <ChangePasswordPage />
+            </>
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/"
         element={
@@ -55,6 +66,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/manage/queries"
         element={

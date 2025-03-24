@@ -409,3 +409,24 @@ export const sendNotificationToStudent = async (studentId: string, title: string
     throw error;
   }
 };
+
+export const updatePassword = async (userId, currentPassword, newPassword) => {
+  try {
+    const response = await api.post('/update-password', {
+      userId,
+      currentPassword,
+      newPassword
+    });
+    
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    console.error("Error updating password:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message
+    };
+  }
+};
