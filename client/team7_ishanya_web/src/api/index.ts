@@ -115,7 +115,7 @@ export const fetchStudentImage = async (studentId: string): Promise<string | nul
 };
 
 // Profile update API calls
-export const updateProfileData = async (id: string, userType: number, formData: any) => {
+export const updateProfileData = async (id: string, userType: number, formData) => {
   try {
     let endpoint = "";
 
@@ -190,7 +190,7 @@ export const addStudentToProgram = async (programId: string, studentId: string) 
   }
 };
 
-export const create_new_educator = async (educatorData: any) => {
+export const create_new_educator = async (educatorData) => {
   try {
     const response = await api.post('/create_new_educator', educatorData);
     return response.data;
@@ -200,7 +200,7 @@ export const create_new_educator = async (educatorData: any) => {
   }
 };
 
-export const create_new_student = async (studentData: any) => {
+export const create_new_student = async (studentData) => {
   try {
     const response = await api.post('/create_new_student', studentData);
     return response.data;
@@ -210,14 +210,14 @@ export const create_new_student = async (studentData: any) => {
   }
 };
 
-export const create_new_employee = async (employeeData: any) => {
+export const create_new_employee = async (employeeData) => {
   try {
     const response = await api.post('/create_new_employee', employeeData);
     return {
       success: true,
       data: response.data
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       success: false,
       message: error.response?.data?.message || error.message
@@ -237,7 +237,7 @@ export const updateEmployeeRole = async (employeeId: string, roleType: number) =
       success: true,
       data: response.data
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error updating employee role:", error);
     return {
       success: false,
@@ -259,7 +259,7 @@ export const submitContactQuery = async (queryData: {
       success: true,
       data: response.data
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error submitting contact query:", error);
     return {
       success: false,
@@ -281,13 +281,13 @@ export const fetchContactQueries = async () => {
 // Resolve (delete) a contact query
 export const resolveContactQuery = async (queryId: number) => {
   try {
-    const response = await api.delete(`/contact-query/${queryId}`);
+    await api.delete(`/contact-query/${queryId}`);
 
     return {
       success: true,
       message: 'Query resolved successfully'
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error resolving contact query:", error);
     return {
       success: false,
@@ -296,7 +296,7 @@ export const resolveContactQuery = async (queryId: number) => {
   }
 };
 
-export const addAttendance = async (attendanceData: any) => {
+export const addAttendance = async (attendanceData) => {
   try {
     const response = await api.post('/attendance', attendanceData);
     return response.data;
