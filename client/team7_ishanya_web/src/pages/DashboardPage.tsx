@@ -19,6 +19,7 @@ import {
   fetchProfileData,
   fetchEducatorDetails,
   fetchAttendanceHistory,
+  fetchStudentPrograms,
 } from "../api";
 
 const DashboardPage = () => {
@@ -42,6 +43,8 @@ const DashboardPage = () => {
   const [secondaryEducator, setSecondaryEducator] = useState(null);
   const [loading, setLoading] = useState(true);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
+  const [studentPrograms, setStudentPrograms] = useState([]);
+  const [showProgramsModal, setShowProgramsModal] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -70,6 +73,9 @@ const DashboardPage = () => {
             );
             setSecondaryEducator(secondaryEducatorData);
           }
+
+          const programs = await fetchStudentPrograms(userId);
+          setStudentPrograms(programs);
         } else {
           const data = await fetchDashboardData();
           setStats(data);
@@ -101,6 +107,14 @@ const DashboardPage = () => {
 
   const closeAttendanceModal = () => {
     setShowAttendanceModal(false);
+  };
+
+  const openProgramsModal = () => {
+    setShowProgramsModal(true);
+  };
+
+  const closeProgramsModal = () => {
+    setShowProgramsModal(false);
   };
 
   const renderAttendanceModal = () => {
@@ -159,6 +173,42 @@ const DashboardPage = () => {
       </div>
     );
   };
+
+  const renderProgramsModal = () => {
+    if (!showProgramsModal) return null;
+
+    return (
+      <div className="fixed inset-0 flex justify-center items-center z-50">
+        <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">My Programs</h2>
+            <button
+              onClick={closeProgramsModal}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <FiX size={24} />
+            </button>
+          </div>
+          <div className="overflow-y-auto flex-grow">
+            {studentPrograms.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">
+                You are not enrolled in any programs.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {studentPrograms.map((program) => (
+                  <li key={program.Program_ID} className="bg-gray-100 p-3 rounded">
+                    {program.Program_Name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderStudentDashboard = () => {
     if (accessType === USER_ROLES.STUDENT) {
       const attendancePercentage =
@@ -167,7 +217,7 @@ const DashboardPage = () => {
               (attendanceData.present_days / attendanceData.total_days) * 100
             )
           : 0;
-
+  
       return (
         <>
           <div className="mb-8">
@@ -178,43 +228,59 @@ const DashboardPage = () => {
               Here's your attendance summary and educator contacts
             </p>
           </div>
-
+  
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div
-              className="card bg-base-100 shadow-xl cursor-pointer hover:shadow-2xl transition-shadow"
-              onClick={openAttendanceModal}
-            >
-              <div className="card-body">
-                <h2 className="card-title flex items-center">
-                  <FiCalendar className="mr-2" /> Attendance Summary
-                </h2>
-                <div className="mt-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span>Present Days:</span>
-                    <span className="font-bold">
-                      {attendanceData.present_days} /{" "}
-                      {attendanceData.total_days}
-                    </span>
+           
+            <div className="space-y-6">
+              <div
+                className="card bg-base-100 shadow-xl cursor-pointer hover:shadow-2xl transition-shadow"
+                onClick={openAttendanceModal}
+              >
+                <div className="card-body">
+                  <h2 className="card-title flex items-center">
+                    <FiCalendar className="mr-2" /> Attendance Summary
+                  </h2>
+                  <div className="mt-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span>Present Days:</span>
+                      <span className="font-bold">
+                        {attendanceData.present_days} /{" "}
+                        {attendanceData.total_days}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span>Attendance Rate:</span>
+                      <span className="font-bold">{attendancePercentage}%</span>
+                    </div>
+                    <progress
+                      className={`progress w-full ${
+                        attendancePercentage >= 90
+                          ? "progress-success"
+                          : attendancePercentage >= 75
+                            ? "progress-warning"
+                            : "progress-error"
+                      }`}
+                      value={attendancePercentage}
+                      max="100"
+                    ></progress>
                   </div>
-                  <div className="flex justify-between items-center mb-2">
-                    <span>Attendance Rate:</span>
-                    <span className="font-bold">{attendancePercentage}%</span>
-                  </div>
-                  <progress
-                    className={`progress w-full ${
-                      attendancePercentage >= 90
-                        ? "progress-success"
-                        : attendancePercentage >= 75
-                          ? "progress-warning"
-                          : "progress-error"
-                    }`}
-                    value={attendancePercentage}
-                    max="100"
-                  ></progress>
+                </div>
+              </div>
+  
+              <div
+                className="card bg-base-100 shadow-xl cursor-pointer hover:shadow-2xl transition-shadow"
+                onClick={openProgramsModal}
+              >
+                <div className="card-body">
+                  <h2 className="card-title flex items-center">
+                    <FiBook className="mr-2" /> My Programs
+                  </h2>
+                  <p className="mt-2">Click to view your enrolled programs</p>
                 </div>
               </div>
             </div>
-
+  
+           
             <div className="card bg-base-100 shadow-xl">
               <div className="card-body">
                 <h2 className="card-title flex items-center">
@@ -245,7 +311,6 @@ const DashboardPage = () => {
                   ) : (
                     <p>No primary educator assigned</p>
                   )}
-
                   {secondaryEducator && (
                     <div>
                       <h3 className="font-bold">Secondary Educator</h3>
@@ -272,7 +337,7 @@ const DashboardPage = () => {
               </div>
             </div>
           </div>
-
+  
           <div className="mt-8">
             <h3 className="text-xl font-bold mb-4">Quick Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -290,14 +355,15 @@ const DashboardPage = () => {
               </button>
             </div>
           </div>
-
+  
           {renderAttendanceModal()}
+          {renderProgramsModal()}
         </>
       );
     }
     return null;
   };
-
+  
   const renderAdminOptions = () => {
     if (
       accessType === USER_ROLES.ADMIN ||
@@ -331,7 +397,6 @@ const DashboardPage = () => {
     }
     return null;
   };
-
   const renderEducatorOptions = () => {
     if (
       accessType &&

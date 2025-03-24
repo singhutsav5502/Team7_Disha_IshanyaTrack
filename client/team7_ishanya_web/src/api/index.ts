@@ -232,7 +232,7 @@ export const updateEmployeeRole = async (employeeId: string, roleType: number) =
       Employee_ID: employeeId,
       Type: roleType
     });
-    
+
     return {
       success: true,
       data: response.data
@@ -254,7 +254,7 @@ export const submitContactQuery = async (queryData: {
 }) => {
   try {
     const response = await api.post('/contact-query', queryData);
-    
+
     return {
       success: true,
       data: response.data
@@ -282,7 +282,7 @@ export const fetchContactQueries = async () => {
 export const resolveContactQuery = async (queryId: number) => {
   try {
     const response = await api.delete(`/contact-query/${queryId}`);
-    
+
     return {
       success: true,
       message: 'Query resolved successfully'
@@ -342,7 +342,7 @@ export const sendNotifications = async (studentIds, title, body) => {
   try {
     if (studentIds.length === 1) {
       return await sendNotificationToStudent(studentIds[0], title, body);
-    } 
+    }
     else {
       return await sendAppNotifications(studentIds, title, body);
     }
@@ -386,13 +386,13 @@ export const saveNotificationToken = async (studentId: string, token: string) =>
     const formData = new FormData();
     formData.append('student_id', studentId);
     formData.append('token', token);
-    
+
     const response = await axios.post(`${API_BASE_URL}/save-token`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     });
-    
+
     return response.data;
   } catch (error) {
     console.error("Error saving notification token:", error);
@@ -417,7 +417,7 @@ export const updatePassword = async (userId, currentPassword, newPassword) => {
       currentPassword,
       newPassword
     });
-    
+
     return {
       success: true,
       data: response.data
@@ -428,5 +428,14 @@ export const updatePassword = async (userId, currentPassword, newPassword) => {
       success: false,
       message: error.response?.data?.message || error.message
     };
+  }
+};
+export const fetchStudentPrograms = async (studentId: string) => {
+  try {
+    const response = await api.get(`/get_student_programs?student_id=${studentId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching student programs:", error);
+    throw error;
   }
 };
