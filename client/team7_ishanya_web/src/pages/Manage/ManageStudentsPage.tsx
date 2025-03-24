@@ -7,7 +7,6 @@ import { toast } from "react-toastify";
 import {
   getUserType,
   getUserId,
-  getProgramMapping,
 } from "../../store/slices/authSlice";
 import { fetchEducatorMapping, fetchStudents } from "../../api";
 

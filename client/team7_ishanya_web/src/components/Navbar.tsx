@@ -247,7 +247,7 @@ const Navbar = () => {
             <div className="hidden md:flex items-center space-x-4">
               {/* Dashboard button */}
               <button
-                className="px-3 py-2 rounded hover:bg-gray-100 flex items-center"
+                className="px-3 py-2 rounded hover:bg-gray-100 flex items-center cursor-pointer"
                 onClick={() => navigate("/")}
               >
                 <span className="mr-2">
@@ -374,7 +374,7 @@ const Navbar = () => {
                 .map((item, index) => (
                   <button
                     key={index}
-                    className="px-3 py-2 rounded hover:bg-gray-100 flex items-center"
+                    className="cursor-pointer px-3 py-2 rounded hover:bg-gray-100 flex items-center"
                     onClick={() => navigate(item.path)}
                   >
                     <span className="mr-2">{item.icon}</span>
@@ -383,16 +383,18 @@ const Navbar = () => {
                 ))}
             </div>
 
-            <div className="hidden md:block mr-5">
-              <div className="dropdown dropdown-end">
+            <div className="hidden md:block ">
+              <div className="dropdown dropdown-end ">
                 <div
                   tabIndex={0}
                   role="button"
                   className="btn btn-ghost btn-circle avatar"
                 >
-                  <div className="avatar placeholder">
+                  <div className="avatar placeholder pr-10">
                     <div className="bg-neutral text-neutral-content rounded-full w-10">
-                      <span>{userId ? userId[0].toUpperCase() : "U"}</span>
+                      <div className="flex items-center justify-center w-full h-full">
+                        <span>{userId ? userId[0].toUpperCase() : "U"}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
