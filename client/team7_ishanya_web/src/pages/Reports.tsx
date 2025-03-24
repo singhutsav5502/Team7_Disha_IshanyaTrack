@@ -247,8 +247,7 @@ const ReportsPage = () => {
                 </thead>
                 <tbody>
                   {filteredReports.map((report) => (
-                    <tr key={report.Report_ID}>
-                      <td>{report.Report_ID}</td>
+                    <tr key={`${report.Student_ID}-${report.Quarter}`}>
                       <td>{report.StudentName}</td>
                       <td>{report.Student_ID}</td>
                       <td>{report.Quarter}</td>
