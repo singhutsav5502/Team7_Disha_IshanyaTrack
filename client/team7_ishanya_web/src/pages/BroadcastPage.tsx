@@ -3,19 +3,16 @@ import {
   fetchStudents,
   sendAppNotifications,
   sendEmailBroadcast,
-  sendNotificationToStudent,
 } from "../api";
 import { toast } from "react-toastify";
 
 const BroadcastPage = () => {
-  // States for app notifications
   const [appNotification, setAppNotification] = useState({
     title: "",
     body: "",
     selectedStudents: [],
   });
 
-  // States for email broadcasts
   const [emailBroadcast, setEmailBroadcast] = useState({
     subject: "",
     body: "",
@@ -23,13 +20,11 @@ const BroadcastPage = () => {
     sendToEmployees: false,
   });
 
-  // States for data and UI
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectAll, setSelectAll] = useState(false);
   const [activeTab, setActiveTab] = useState("app");
 
-  // Fetch students on component mount
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -44,7 +39,6 @@ const BroadcastPage = () => {
     loadData();
   }, []);
 
-  // Handle app notification changes
   const handleAppNotificationChange = (e) => {
     const { name, value } = e.target;
     setAppNotification((prev) => ({
@@ -53,7 +47,6 @@ const BroadcastPage = () => {
     }));
   };
 
-  // Handle email broadcast changes
   const handleEmailBroadcastChange = (e) => {
     const { name, value, type, checked } = e.target;
     setEmailBroadcast((prev) => ({
@@ -62,11 +55,9 @@ const BroadcastPage = () => {
     }));
   };
 
-  // Handle student selection for app notifications
   const handleStudentSelection = (studentId) => {
     setAppNotification((prev) => {
       const isSelected = prev.selectedStudents.includes(studentId);
-
       if (isSelected) {
         return {
           ...prev,
@@ -83,18 +74,14 @@ const BroadcastPage = () => {
     });
   };
 
-  // Handle select all students
   const handleSelectAll = () => {
     setSelectAll(!selectAll);
-
     if (!selectAll) {
-      // Select all students
       setAppNotification((prev) => ({
         ...prev,
         selectedStudents: students.map((student) => student.S_ID),
       }));
     } else {
-      // Deselect all students
       setAppNotification((prev) => ({
         ...prev,
         selectedStudents: [],
@@ -102,7 +89,6 @@ const BroadcastPage = () => {
     }
   };
 
-  // Send app notifications
   const sendNotifications = async () => {
     if (!appNotification.title || !appNotification.body) {
       toast.error("Please provide both title and body for the notification");
@@ -116,13 +102,21 @@ const BroadcastPage = () => {
 
     setLoading(true);
     try {
-      await sendNotificationToStudent(
+      const response = await sendAppNotifications(
         appNotification.selectedStudents,
         appNotification.title,
         appNotification.body
       );
 
-      toast.success("App notifications sent successfully!");
+      if (response.successful_notifications.length > 0) {
+        toast.success(`Successfully sent ${response.successful_notifications.length} notifications`);
+      }
+      
+      if (response.failed_notifications.length > 0) {
+        toast.warning(`Failed to send ${response.failed_notifications.length} notifications`);
+        // console.warn("Failed notifications:", response.failed_notifications);
+      }
+
       setAppNotification({
         title: "",
         body: "",
@@ -137,7 +131,6 @@ const BroadcastPage = () => {
     }
   };
 
-  // Send email broadcasts
   const sendEmails = async () => {
     if (!emailBroadcast.subject || !emailBroadcast.body) {
       toast.error("Please provide both subject and body for the email");
@@ -231,7 +224,7 @@ const BroadcastPage = () => {
                   onChange={handleAppNotificationChange}
                   placeholder="Enter notification content"
                   className="textarea textarea-bordered"
-                  rows={4 as number}
+                  rows={4}
                 ></textarea>
               </div>
 
@@ -322,7 +315,7 @@ const BroadcastPage = () => {
                   onChange={handleEmailBroadcastChange}
                   placeholder="Enter email content"
                   className="textarea textarea-bordered"
-                  rows={6 as number}
+                  rows={6}
                 ></textarea>
               </div>
 
