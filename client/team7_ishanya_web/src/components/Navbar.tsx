@@ -11,6 +11,7 @@ import {
   FiSettings,
   FiChevronDown,
   FiPlus,
+  FiBell,
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserType, getUserId, logout } from "../store/slices/authSlice";
@@ -89,6 +90,11 @@ const Navbar = () => {
           path: "/create/educator",
           icon: <FiPlus />,
           isCreateItem: true,
+        },
+        {
+          label: "Notify",
+          path: "/notify",
+          icon: <FiBell />,
         }
       );
     }

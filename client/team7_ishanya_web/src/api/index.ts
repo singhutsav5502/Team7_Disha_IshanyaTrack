@@ -338,6 +338,20 @@ export const fetchAttendanceHistory = async (studentId: string) => {
 };
 
 // New API calls for broadcast functionality
+export const sendNotifications = async (studentIds, title, body) => {
+  try {
+    if (studentIds.length === 1) {
+      return await sendNotificationToStudent(studentIds[0], title, body);
+    } 
+    else {
+      return await sendAppNotifications(studentIds, title, body);
+    }
+  } catch (error) {
+    console.error("Error sending notifications:", error);
+    throw error;
+  }
+};
+
 export const sendAppNotifications = async (studentIds: string[], title: string, body: string) => {
   try {
     const response = await api.post('/notify-multiple', {

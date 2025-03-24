@@ -19,6 +19,7 @@ import MyStudents from "./pages/MyStudents";
 import { USER_ROLES } from "./types";
 import Navbar from "./components/Navbar";
 import ContactQueriesPage from "./pages/Manage/ContactQueriesPage";
+import BroadcastPage from "./pages/BroadcastPage";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -39,6 +40,17 @@ function App() {
             <>
               <Navbar />
               <DashboardPage />
+            </>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/notify"
+        element={
+          <ProtectedRoute requiredRole={USER_ROLES.ADMIN}>
+            <>
+              <Navbar />
+              <BroadcastPage />
             </>
           </ProtectedRoute>
         }
