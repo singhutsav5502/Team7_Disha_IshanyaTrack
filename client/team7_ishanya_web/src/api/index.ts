@@ -473,3 +473,32 @@ export const deleteEmployee = async (employeeId: string) => {
     throw error;
   }
 };
+
+export const fetchStudentPerformance = async (studentId: string, quarter: number) => {
+  try {
+    const tableName = `Performance_${quarter}`;
+    const response = await api.post(`${API_BASE_URL}/get_student_performance`, { 
+      studentId, 
+      tableName 
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching student performance for quarter ${quarter}:`, error);
+    throw error;
+  }
+};
+
+export const updateStudentPerformance = async (studentId: string, quarter: number, performanceData: any) => {
+  try {
+    const tableName = `Performance_${quarter}`;
+    const response = await api.post(`${API_BASE_URL}/update_student_performance`, {
+      studentId,
+      tableName,
+      performanceData
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating student performance for quarter ${quarter}:`, error);
+    throw error;
+  }
+};

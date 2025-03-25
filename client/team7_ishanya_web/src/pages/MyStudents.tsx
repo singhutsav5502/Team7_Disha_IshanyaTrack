@@ -3,9 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { getUserId, getProgramData } from "../store/slices/authSlice";
-import { fetchStudents } from "../api";
-import { FiSearch, FiCalendar } from "react-icons/fi";
-import { addAttendance } from "../api";
+import {
+  fetchStudents,
+  fetchStudentPerformance,
+  updateStudentPerformance,
+  addAttendance,
+} from "../api";
+import { FiSearch, FiCalendar, FiEdit } from "react-icons/fi";
+
 const MyStudentsPage = () => {
   const navigate = useNavigate();
   const userId = useSelector(getUserId);
@@ -16,12 +21,23 @@ const MyStudentsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [studentProgramMap, setStudentProgramMap] = useState({});
   const [selectedStudent, setSelectedStudent] = useState(null);
+
+  // Attendance Modal State
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
   const [attendanceData, setAttendanceData] = useState({
     S_ID: "",
     Date: new Date().toISOString().split("T")[0],
     Present: true,
   });
+
+  // Metrics Modal State
+  const [showMetricsModal, setShowMetricsModal] = useState(false);
+  const [selectedQuarter, setSelectedQuarter] = useState(1);
+  const [performanceData, setPerformanceData] = useState(null);
+  const [additionalMetrics, setAdditionalMetrics] = useState([]);
+  const [newMetricName, setNewMetricName] = useState("");
+  const [newMetricValue, setNewMetricValue] = useState(3);
+  const [newMetricComment, setNewMetricComment] = useState("");
 
   // Create a mapping of students to their programs
   useEffect(() => {
@@ -135,6 +151,131 @@ const MyStudentsPage = () => {
     }
   };
 
+  // Handle editing metrics
+  const handleEditMetrics = async (student, event) => {
+    event.stopPropagation();
+    setSelectedStudent(student);
+    await fetchPerformanceData(student.S_ID, 1); // Default to first quarter
+    setShowMetricsModal(true);
+  };
+
+  // Fetch performance data for a specific quarter
+  const fetchPerformanceData = async (studentId, quarter) => {
+    try {
+      const data = await fetchStudentPerformance(studentId, quarter);
+      setPerformanceData(data);
+
+      // Parse additional metrics from JSON if they exist
+      if (data && data.Additional_Metrics) {
+        try {
+          const metricsObj = JSON.parse(data.Additional_Metrics);
+          const metricsArray = Object.keys(metricsObj).map((key) => ({
+            name: key,
+            value: metricsObj[key].Value,
+            comment: metricsObj[key].Comment || "",
+          }));
+          setAdditionalMetrics(metricsArray);
+        } catch (e) {
+          setAdditionalMetrics([]);
+          console.error("Error parsing additional metrics:", e);
+        }
+      } else {
+        setAdditionalMetrics([]);
+      }
+    } catch (error) {
+      console.error("Error fetching performance data:", error);
+      toast.error("Failed to load performance data");
+      setPerformanceData(null);
+      setAdditionalMetrics([]);
+    }
+  };
+
+  // Handle quarter change
+  const handleQuarterChange = async (quarter) => {
+    setSelectedQuarter(quarter);
+    if (selectedStudent) {
+      await fetchPerformanceData(selectedStudent.S_ID, quarter);
+    }
+  };
+
+  // Add a new metric
+  const handleAddMetric = () => {
+    if (!newMetricName.trim()) {
+      toast.error("Metric name is required");
+      return;
+    }
+
+    // Check if metric with same name already exists
+    const existingIndex = additionalMetrics.findIndex(
+      (m) => m.name === newMetricName
+    );
+
+    if (existingIndex >= 0) {
+      // Update existing metric
+      const updatedMetrics = [...additionalMetrics];
+      updatedMetrics[existingIndex] = {
+        name: newMetricName,
+        value: newMetricValue,
+        comment: newMetricComment,
+      };
+      setAdditionalMetrics(updatedMetrics);
+      toast.info("Existing metric updated");
+    } else {
+      // Add new metric
+      setAdditionalMetrics([
+        ...additionalMetrics,
+        {
+          name: newMetricName,
+          value: newMetricValue,
+          comment: newMetricComment,
+        },
+      ]);
+    }
+
+    // Reset form
+    setNewMetricName("");
+    setNewMetricValue(3);
+    setNewMetricComment("");
+  };
+
+  // Handle saving all metrics
+  const handleSaveMetrics = async () => {
+    if (!performanceData || !selectedStudent) return;
+
+    try {
+      // Convert additional metrics array to object format
+      const metricsObject = {};
+      additionalMetrics.forEach((metric) => {
+        metricsObject[metric.name] = {
+          Value: metric.value,
+          Comment: metric.comment,
+        };
+      });
+
+      // Prepare updated performance data
+      const updatedData = {
+        ...performanceData,
+        Cognitive_score: parseFloat(performanceData.Cognitive_score) || 3,
+        Communication_score:
+          parseFloat(performanceData.Communication_score) || 3,
+        Reasoning_score: parseFloat(performanceData.Reasoning_score) || 3,
+        Additional_Metrics: JSON.stringify(metricsObject),
+      };
+
+      // Send update to server
+      await updateStudentPerformance(
+        selectedStudent.S_ID,
+        selectedQuarter,
+        updatedData
+      );
+      toast.success("Performance metrics updated successfully");
+      setShowMetricsModal(false);
+    } catch (error) {
+      console.error("Error updating performance metrics:", error);
+      toast.error("Failed to update performance metrics");
+    }
+  };
+
   // Get program name for a student
   const getStudentProgram = (studentId) => {
     const programs = studentProgramMap[studentId];
@@ -225,9 +366,6 @@ const MyStudentsPage = () => {
                       <td>
                         <div className="flex items-center space-x-3">
                           <div className="flex items-center justify-center w-10 h-10 bg-primary text-primary-content rounded-full">
-                            {/* <span className="text-xs font-bold">
-                             { `${student.Fname?.[0]}${student.Lname?.[0]}`}
-                            </span> */}
                             <img
                               src={`https://avatar.iran.liara.run/public/${student.Gender === "Male" ? "boy" : student.Gender === "Female" ? "girl" : "girl"}?username=[${student.Fname?.[0]}${student.Lname?.[0]}]`}
                               alt="avatar-image"
@@ -265,6 +403,13 @@ const MyStudentsPage = () => {
                             <FiCalendar className="mr-1" />
                             Add Attendance
                           </button>
+                          <button
+                            className="btn btn-sm btn-secondary"
+                            onClick={(e) => handleEditMetrics(student, e)}
+                          >
+                            <FiEdit className="mr-1" />
+                            Edit Metrics
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -276,8 +421,9 @@ const MyStudentsPage = () => {
         </div>
       </div>
 
+      {/* Attendance Modal */}
       {showAttendanceModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white rounded-lg p-8 shadow-xl max-w-md w-full">
             <h3 className="text-2xl font-bold mb-4">Record Attendance</h3>
             <form onSubmit={handleAttendanceSubmit}>
@@ -329,7 +475,7 @@ const MyStudentsPage = () => {
                         Present: e.target.checked,
                       }))
                     }
-                    className="checkbox checkbox-primary "
+                    className="checkbox checkbox-primary"
                   />
                 </label>
               </div>
@@ -346,6 +492,257 @@ const MyStudentsPage = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showMetricsModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg p-8 shadow-xl max-w-3xl w-full">
+            <h3 className="text-2xl font-bold mb-4">
+              Performance Metrics - {selectedStudent?.Fname}{" "}
+              {selectedStudent?.Lname}
+            </h3>
+
+            {/* Quarter Selection */}
+            <div className="tabs tabs-boxed mb-4">
+              {[1, 2, 3, 4].map((quarter) => (
+                <a
+                  key={quarter}
+                  className={`tab ${selectedQuarter === quarter ? "tab-active" : ""}`}
+                  onClick={() => handleQuarterChange(quarter)}
+                >
+                  Quarter {quarter}
+                </a>
+              ))}
+            </div>
+
+            {performanceData ? (
+              <div className="space-y-6">
+                {/* Core Metrics */}
+                <div className="card bg-base-100 shadow-sm">
+                  <div className="card-body">
+                    <h4 className="text-lg font-semibold">Core Metrics</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text">
+                            Cognitive Score (1-5)
+                          </span>
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="5"
+                          value={performanceData.Cognitive_score || 3}
+                          onChange={(e) =>
+                            setPerformanceData({
+                              ...performanceData,
+                              Cognitive_score: Math.min(
+                                5,
+                                Math.max(1, parseInt(e.target.value) || 1)
+                              ),
+                            })
+                          }
+                          className="input input-bordered"
+                        />
+                      </div>
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text">
+                            Communication Score (1-5)
+                          </span>
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="5"
+                          value={performanceData.Communication_score || 3}
+                          onChange={(e) =>
+                            setPerformanceData({
+                              ...performanceData,
+                              Communication_score: Math.min(
+                                5,
+                                Math.max(1, parseInt(e.target.value) || 1)
+                              ),
+                            })
+                          }
+                          className="input input-bordered"
+                        />
+                      </div>
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text">
+                            Reasoning Score (1-5)
+                          </span>
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="5"
+                          value={performanceData.Reasoning_score || 3}
+                          onChange={(e) =>
+                            setPerformanceData({
+                              ...performanceData,
+                              Reasoning_score: Math.min(
+                                5,
+                                Math.max(1, parseInt(e.target.value) || 1)
+                              ),
+                            })
+                          }
+                          className="input input-bordered"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Metrics */}
+                <div className="card bg-base-100 shadow-sm">
+                  <div className="card-body">
+                    <h4 className="text-lg font-semibold">
+                      Additional Metrics
+                    </h4>
+
+                    {/* Existing Additional Metrics */}
+                    {additionalMetrics.length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="table w-full">
+                          <thead>
+                            <tr>
+                              <th>Metric Name</th>
+                              <th>Value (1-5)</th>
+                              <th>Comment</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {additionalMetrics.map((metric, index) => (
+                              <tr key={index}>
+                                <td>{metric.name}</td>
+                                <td>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    max="5"
+                                    value={metric.value}
+                                    onChange={(e) => {
+                                      const newValue = Math.min(
+                                        5,
+                                        Math.max(
+                                          1,
+                                          parseInt(e.target.value) || 1
+                                        )
+                                      );
+                                      const updatedMetrics = [
+                                        ...additionalMetrics,
+                                      ];
+                                      updatedMetrics[index].value = newValue;
+                                      setAdditionalMetrics(updatedMetrics);
+                                    }}
+                                    className="input input-bordered w-20"
+                                  />
+                                </td>
+                                <td>
+                                  <input
+                                    type="text"
+                                    value={metric.comment}
+                                    onChange={(e) => {
+                                      const updatedMetrics = [
+                                        ...additionalMetrics,
+                                      ];
+                                      updatedMetrics[index].comment =
+                                        e.target.value;
+                                      setAdditionalMetrics(updatedMetrics);
+                                    }}
+                                    className="input input-bordered w-full"
+                                  />
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="alert alert-info">
+                        <span>No additional metrics added yet.</span>
+                      </div>
+                    )}
+
+                    {/* Add New Metric Form */}
+                    <div className="divider">Add New Metric</div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text">Metric Name</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={newMetricName}
+                          onChange={(e) => setNewMetricName(e.target.value)}
+                          className="input input-bordered"
+                          placeholder="e.g., Social Skills"
+                        />
+                      </div>
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text">Value (1-5)</span>
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="5"
+                          value={newMetricValue}
+                          onChange={(e) =>
+                            setNewMetricValue(
+                              Math.min(
+                                5,
+                                Math.max(1, parseInt(e.target.value) || 1)
+                              )
+                            )
+                          }
+                          className="input input-bordered"
+                        />
+                      </div>
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text">Comment</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={newMetricComment}
+                          onChange={(e) => setNewMetricComment(e.target.value)}
+                          className="input input-bordered"
+                          placeholder="Optional comment"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      className="btn btn-primary mt-2"
+                      onClick={handleAddMetric}
+                    >
+                      Add Metric
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-center items-center h-64">
+                <span className="loading loading-spinner loading-lg"></span>
+              </div>
+            )}
+
+            <div className="flex justify-end mt-6">
+              <button
+                type="button"
+                className="btn btn-ghost mr-2"
+                onClick={() => setShowMetricsModal(false)}
+              >
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={handleSaveMetrics}>
+                Save Changes
+              </button>
+            </div>
           </div>
         </div>
       )}

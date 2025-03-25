@@ -1384,3 +1384,139 @@ def delete_employee(employee_id):
     except Exception as e:
         print("Error deleting employee:", e)
         return jsonify({'error': f'Failed to delete employee: {str(e)}'}), 500
+@app.route('/get_student_performance', methods=['POST'])
+def get_student_performance():
+    try:
+        data = request.get_json()
+        student_id = data.get('studentId')
+        table_name = data.get('tableName')
+
+        # Validate inputs
+        if not student_id or not table_name:
+            return jsonify({'error': 'Student ID and table name are required'}), 400
+
+        # Sanitize table name to prevent SQL injection
+        valid_tables = ['Performance_1', 'Performance_2', 'Performance_3', 'Performance_4']
+        if table_name not in valid_tables:
+            return jsonify({'error': 'Invalid table name'}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Get performance data
+        query = f"SELECT * FROM {table_name} WHERE Student_ID = %s"
+        cursor.execute(query, (student_id,))
+        performance = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        if performance:
+            return jsonify(performance)
+        else:
+            # Return empty structure if no data exists yet
+            return jsonify({
+                'Student_ID': student_id,
+                'Cognitive_score': 3,
+                'Communication_score': 3,
+                'Reasoning_score': 3,
+                'Disability_type': '',
+                'AdditionalMetrics': '{}'
+            })
+
+    except Exception as e:
+        print(f"Error fetching student performance: {str(e)}")
+        return jsonify({'error': f'Failed to fetch performance data: {str(e)}'}), 500
+
+@app.route('/update_student_performance', methods=['POST'])
+def update_student_performance():
+    try:
+        data = request.get_json()
+        student_id = data.get('studentId')
+        table_name = data.get('tableName')
+        performance_data = data.get('performanceData')
+
+        # Validate inputs
+        if not student_id or not table_name or not performance_data:
+            return jsonify({'error': 'Missing required data'}), 400
+
+        # Sanitize table name to prevent SQL injection
+        valid_tables = ['Performance_1', 'Performance_2', 'Performance_3', 'Performance_4']
+        if table_name not in valid_tables:
+            return jsonify({'error': 'Invalid table name'}), 400
+
+        # Validate score values (must be between 1-5)
+        cognitive_score = float(performance_data.get('Cognitive_score', 3))
+        communication_score = float(performance_data.get('Communication_score', 3))
+        reasoning_score = float(performance_data.get('Reasoning_score', 3))
+
+        if not (1 <= cognitive_score <= 5 and 1 <= communication_score <= 5 and 1 <= reasoning_score <= 5):
+            return jsonify({'error': 'Score values must be between 1 and 5'}), 400
+
+        # Validate AdditionalMetrics JSON
+        additional_metrics = performance_data.get('Additional_Metrics', '{}')
+        try:
+            metrics_obj = json.loads(additional_metrics)
+
+            # Validate each metric value is between 1-5
+            for metric_name, metric_data in metrics_obj.items():
+                if not 1 <= float(metric_data.get('Value', 3)) <= 5:
+                    return jsonify({'error': f'Value for metric {metric_name} must be between 1 and 5'}), 400
+
+        except json.JSONDecodeError:
+            return jsonify({'error': 'Invalid JSON format for Additional_Metrics'}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Check if record exists
+        cursor.execute(f"SELECT 1 FROM {table_name} WHERE Student_ID = %s", (student_id,))
+        record_exists = cursor.fetchone() is not None
+
+        if record_exists:
+            # Update existing record
+            query = f"""
+                UPDATE {table_name}
+                SET Cognitive_score = %s,
+                    Communication_score = %s,
+                    Reasoning_score = %s,
+                    Additional_Metrics = %s
+                WHERE Student_ID = %s
+            """
+            cursor.execute(
+                query,
+                (
+                    cognitive_score,
+                    communication_score,
+                    reasoning_score,
+                    additional_metrics,
+                    student_id
+                )
+            )
+        else:
+            # Insert new record
+            query = f"""
+                INSERT INTO {table_name}
+                (Student_ID, Cognitive_score, Communication_score, Reasoning_score, Additional_Metrics)
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            cursor.execute(
+                query,
+                (
+                    student_id,
+                    cognitive_score,
+                    communication_score,
+                    reasoning_score,
+                    additional_metrics
+                )
+            )
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({'success': True, 'message': 'Performance data updated successfully'})
+
+    except Exception as e:
+        print(f"Error updating student performance: {str(e)}")
+        return jsonify({'error': f'Failed to update performance data: {str(e)}'}), 500
