@@ -1558,9 +1558,6 @@ def update_student_performance():
         communication_score = float(performance_data.get('Communication_score', 3))
         reasoning_score = float(performance_data.get('Reasoning_score', 3))
 
-        if not (1 <= cognitive_score <= 5 and 1 <= communication_score <= 5 and 1 <= reasoning_score <= 5):
-            return jsonify({'error': 'Score values must be between 1 and 5'}), 400
-
         # Validate AdditionalMetrics JSON
         additional_metrics = performance_data.get('Additional_Metrics', '{}')
         try:
