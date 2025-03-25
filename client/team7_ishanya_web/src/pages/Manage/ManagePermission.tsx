@@ -39,7 +39,7 @@ const ManagePermission = () => {
       const response = await updateEmployeeRole(selectedEmployee, selectedRole);
 
       if (response.success) {
-        toast.success(`Role updated successfully for ${response.data.Name}`);
+        toast.success(`Role updated successfully`);
         setSelectedEmployee("");
         setSelectedRole(null);
       } else {
