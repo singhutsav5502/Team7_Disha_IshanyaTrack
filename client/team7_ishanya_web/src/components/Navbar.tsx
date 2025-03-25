@@ -13,6 +13,8 @@ import {
   FiPlus,
   FiBell,
   FiTool,
+  FiClipboard,
+  FiCalendar,
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserType, getUserId, logout } from "../store/slices/authSlice";
@@ -50,6 +52,12 @@ const Navbar = () => {
 
     if (userType === USER_ROLES.SUPERUSER || userType === USER_ROLES.ADMIN) {
       items.push(
+        {
+          label: "Manage Assessments",
+          path: "/manage/assessments",
+          icon: <FiClipboard />,
+          isManageItem: true,
+        },
         {
           label: "Manage Queries",
           path: "/manage/queries",
@@ -113,7 +121,13 @@ const Navbar = () => {
     ) {
       items.push(
         { label: "My Students", path: "/my_students", icon: <FiUsers /> },
-        { label: "Reports", path: "/reports", icon: <FiFileText /> }
+        { label: "Reports", path: "/reports", icon: <FiFileText /> },
+        {
+          label: "Manage Appointments",
+          path: "/manage/appointments",
+          icon: <FiCalendar />,
+          isManageItem: true,
+        }
       );
     }
 

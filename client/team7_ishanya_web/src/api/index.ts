@@ -14,6 +14,6 @@ export * from './services/notification';
 export * from './services/reports';
 export * from './services/contact';
 export * from './services/dashboard';
-
+export * from './services/appointments_and_assessments'
 // Export utilities
 export * from './utils/errorHandler';

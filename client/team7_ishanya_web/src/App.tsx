@@ -22,6 +22,8 @@ import ContactQueriesPage from "./pages/Manage/ContactQueriesPage";
 import BroadcastPage from "./pages/BroadcastPage";
 import ChangePasswordPage from "./pages/auth/ChangePassword";
 import ReportsPage from "./pages/Reports";
+import EducatorAppointmentsPage from "./pages/appointments/EducatorAppointmentsPage";
+import AdminAssessmentsPage from "./pages/appointments/AdminAssesmentPage";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -153,6 +155,29 @@ function App() {
             <>
               <Navbar />
               <ManagePermission />
+            </>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/manage/appointments"
+        element={
+          <ProtectedRoute requiredRole={USER_ROLES.EDUCATOR}>
+            <>
+              <Navbar />
+              <EducatorAppointmentsPage />
+            </>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/manage/assessments"
+        element={
+          <ProtectedRoute requiredRole={USER_ROLES.ADMIN}>
+            <>
+              <Navbar />
+              <AdminAssessmentsPage />
             </>
           </ProtectedRoute>
         }

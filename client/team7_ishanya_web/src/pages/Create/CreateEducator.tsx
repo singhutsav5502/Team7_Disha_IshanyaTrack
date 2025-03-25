@@ -1,7 +1,11 @@
-import  { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { create_new_educator,fetchEmployees, fetchProgramData } from "../../api";
+import {
+  create_new_educator,
+  fetchEmployees,
+  fetchProgramData,
+} from "../../api";
 
 const AssignEducatorPage = () => {
   const navigate = useNavigate();
@@ -47,8 +51,10 @@ const AssignEducatorPage = () => {
 
   const handleEmployeeSelect = (e) => {
     const employeeId = e.target.value;
-    const selectedEmployee = employees.find(emp => emp.Employee_ID === employeeId);
-    
+    const selectedEmployee = employees.find(
+      (emp) => emp.Employee_ID === employeeId
+    );
+
     if (selectedEmployee) {
       setFormData({
         Employee_ID: selectedEmployee.Employee_ID,
@@ -71,20 +77,45 @@ const AssignEducatorPage = () => {
 
     try {
       const response = await create_new_educator(formData);
-      
+
       if (response.success) {
         toast.success("Educator assigned successfully!");
         navigate("/manage-educators");
       } else {
-        toast.error(`Failed to assign educator: ${response.message}`);
+        // Handle specific error messages from the backend
+        if (response.message.includes("Employee ID already exists")) {
+          toast.error(
+            "An educator with this Employee ID already exists. Please use a different ID."
+          );
+        } else if (response.message.includes("Database integrity error")) {
+          toast.error(
+            "There was an issue with the database. Please try again or contact support."
+          );
+        } else {
+          toast.error(`Failed to assign educator: ${response.message}`);
+        }
       }
     } catch (error) {
-      toast.error(`Error assigning educator: ${error.message}`);
+      // Handle network errors or unexpected exceptions
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        toast.error(
+          `Server error: ${error.response.data.message || "Unknown error occurred"}`
+        );
+      } else if (error.request) {
+        // The request was made but no response was received
+        toast.error(
+          "No response received from server. Please check your network connection."
+        );
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        toast.error(`Error assigning educator: ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }
   };
-
   if (loadingData) {
     return (
       <div className="container mx-auto py-10">
@@ -117,7 +148,10 @@ const AssignEducatorPage = () => {
                       Select an employee
                     </option>
                     {employees.map((employee) => (
-                      <option key={employee.Employee_ID} value={employee.Employee_ID}>
+                      <option
+                        key={employee.Employee_ID}
+                        value={employee.Employee_ID}
+                      >
                         {employee.Name} ({employee.Employee_ID})
                       </option>
                     ))}
@@ -141,7 +175,10 @@ const AssignEducatorPage = () => {
                       Select program
                     </option>
                     {programs.map((program) => (
-                      <option key={program.Program_ID} value={program.Program_ID}>
+                      <option
+                        key={program.Program_ID}
+                        value={program.Program_ID}
+                      >
                         {program.Program_Name}
                       </option>
                     ))}
@@ -228,7 +265,9 @@ const AssignEducatorPage = () => {
                 <button
                   type="submit"
                   className={`btn btn-primary w-full ${loading ? "loading" : ""}`}
-                  disabled={loading || !formData.Employee_ID || !formData.Program_ID}
+                  disabled={
+                    loading || !formData.Employee_ID || !formData.Program_ID
+                  }
                 >
                   {loading ? "Assigning..." : "Assign as Educator"}
                 </button>

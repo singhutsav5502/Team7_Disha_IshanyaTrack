@@ -94,3 +94,14 @@ export const deleteEmployee = async (employeeId: string) => {
     throw error;
   }
 };
+
+// Fetch educators
+export const fetchEducators = async () => {
+  try {
+    const response = await api.get('/fetch-educators');
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching educators:", error);
+    throw error;
+  }
+};

@@ -681,29 +681,29 @@ def create_new_employee():
     except Exception as e:
         print("Error creating employee:", e)
         return jsonify({'success': False, 'message': f'Failed to create employee: {str(e)}'}), 500
-        
-        
+
+
 @app.route('/create_new_student', methods=['POST'])
 def create_new_student():
     try:
         data = request.get_json()
         parent_email = data.get('Parent_Email')
-        
+
         conn = get_db_connection()
         cursor = conn.cursor()
-        
+
         # Check if email already exists
         cursor.execute("SELECT * FROM Student WHERE Parent_Email = %s", (parent_email,))
         existing_student = cursor.fetchone()
-        
+
         if existing_student:
             cursor.close()
             conn.close()
             return jsonify({
-                'success': False, 
+                'success': False,
                 'message': 'A student with this parent email already exists. Please use a different email address.'
             }), 409
-        
+
         # Continue with student creation if email is unique
         cursor.execute("SELECT MAX(CAST(SUBSTRING(S_ID, 2) AS UNSIGNED)) FROM Student")
         result = cursor.fetchone()
@@ -1109,7 +1109,7 @@ def get_contact_queries():
 def resolve_contact_query(query_id):
     try:
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
 
         # Check if query exists
         cursor.execute("SELECT * FROM Contact_queries WHERE Query_ID = %s", (query_id,))
@@ -1117,6 +1117,21 @@ def resolve_contact_query(query_id):
             cursor.close()
             conn.close()
             return jsonify({'success': False, 'message': 'Query not found'}), 404
+
+        # Check if query has any active appointments
+        cursor.execute(
+            "SELECT * FROM Appointments WHERE Query_ID = %s AND Status = 'Scheduled'",
+            (query_id,)
+        )
+        active_appointment = cursor.fetchone()
+
+        if active_appointment:
+            cursor.close()
+            conn.close()
+            return jsonify({
+                'success': False,
+                'message': 'Cannot resolve query with active appointments. Please complete or cancel the appointment first.'
+            }), 400
 
         # Delete the query
         cursor.execute("DELETE FROM Contact_queries WHERE Query_ID = %s", (query_id,))
@@ -1133,6 +1148,7 @@ def resolve_contact_query(query_id):
     except Exception as e:
         print("Error resolving contact query:", e)
         return jsonify({'success': False, 'message': 'Failed to resolve query'}), 500
+
 
 @app.route('/get_educator_by_id', methods=['POST'])
 def get_educator_by_id():
@@ -1238,7 +1254,7 @@ def add_attendance():
             conn.commit()
             cursor.close()
             conn.close()
-            
+
             return jsonify({
                 'success': True,
                 'message': 'Attendance updated successfully'
@@ -1253,7 +1269,7 @@ def add_attendance():
             attendance_id = cursor.lastrowid
             cursor.close()
             conn.close()
-            
+
             return jsonify({
                 'success': True,
                 'message': 'Attendance recorded successfully',
@@ -1682,3 +1698,305 @@ def update_student_performance():
     except Exception as e:
         print(f"Error updating student performance: {str(e)}")
         return jsonify({'error': f'Failed to update performance data: {str(e)}'}), 500
+
+@app.route('/schedule-appointment', methods=['POST'])
+def schedule_appointment():
+    try:
+        data = request.get_json()
+        query_id = data.get('query_id')
+        educator_id = data.get('educator_id')
+        scheduled_date = data.get('scheduled_date')
+        notes = data.get('notes', '')
+
+        if not query_id or not educator_id or not scheduled_date:
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Check if query exists
+        cursor.execute("SELECT * FROM Contact_queries WHERE Query_ID = %s", (query_id,))
+        query = cursor.fetchone()
+        if not query:
+            cursor.close()
+            conn.close()
+            return jsonify({'error': 'Query not found'}), 404
+
+        # Check if educator exists
+        cursor.execute("SELECT * FROM Employees WHERE Employee_ID = %s", (educator_id,))
+        educator = cursor.fetchone()
+        if not educator:
+            cursor.close()
+            conn.close()
+            return jsonify({'error': 'Educator not found'}), 404
+
+        # Insert appointment
+        cursor.execute(
+            "INSERT INTO Appointments (Query_ID, Educator_ID, Scheduled_Date, Notes) VALUES (%s, %s, %s, %s)",
+            (query_id, educator_id, scheduled_date, notes)
+        )
+        conn.commit()
+        appointment_id = cursor.lastrowid
+
+        # Get educator details for email
+        cursor.execute(
+            "SELECT Name, Email, Phone FROM Employees WHERE Employee_ID = %s",
+            (educator_id,)
+        )
+        educator_details = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        # Send email to parent
+        email_body = f"""
+        Dear {query['Parent_Name']},
+
+        We have scheduled an appointment for your query regarding {query['Student_Name']}.
+
+        Appointment Details:
+        Date and Time: {scheduled_date}
+        Educator: {educator_details['Name']}
+        Educator Email: {educator_details['Email']}
+        Educator Phone: {educator_details['Phone']}
+
+        Please feel free to contact the educator directly if you have any questions.
+
+        Thank you,
+        Ishanya Team
+        """
+
+        send_email(query['Parent_Email'], "Appointment Scheduled for Your Query", email_body)
+
+        return jsonify({
+            'success': True,
+            'message': 'Appointment scheduled successfully',
+            'appointment_id': appointment_id
+        }), 201
+
+    except Exception as e:
+        print("Error scheduling appointment:", e)
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/educator-appointments/<string:educator_id>', methods=['GET'])
+def get_educator_appointments(educator_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query = """
+        SELECT a.*, q.Parent_Name, q.Parent_Email, q.Student_Name, q.Query
+        FROM Appointments a
+        JOIN Contact_queries q ON a.Query_ID = q.Query_ID
+        WHERE a.Educator_ID = %s AND a.Status != 'Cancelled'
+        ORDER BY a.Scheduled_Date DESC
+        """
+        cursor.execute(query, (educator_id,))
+        appointments = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify(appointments), 200
+
+    except Exception as e:
+        print("Error fetching educator appointments:", e)
+        return jsonify({'error': str(e)}), 500
+@app.route('/complete-appointment', methods=['POST'])
+def complete_appointment():
+    try:
+        data = request.get_json()
+        appointment_id = data.get('appointment_id')
+        educator_id = data.get('educator_id')
+        comments = data.get('comments', {})
+
+        if not appointment_id or not educator_id:
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Update appointment status
+        cursor.execute(
+            "UPDATE Appointments SET Status = 'Completed' WHERE Appointment_ID = %s AND Educator_ID = %s",
+            (appointment_id, educator_id)
+        )
+
+        # Insert assessment
+        cursor.execute(
+            "INSERT INTO Assessments (Appointment_ID, Educator_ID, Comments) VALUES (%s, %s, %s)",
+            (appointment_id, educator_id, json.dumps(comments))
+        )
+
+        conn.commit()
+        assessment_id = cursor.lastrowid
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'message': 'Appointment completed and assessment added',
+            'assessment_id': assessment_id
+        }), 200
+
+    except Exception as e:
+        print("Error completing appointment:", e)
+        return jsonify({'error': str(e)}), 500
+@app.route('/admin/assessments', methods=['GET'])
+def get_all_assessments():
+    try:
+        decision_status = request.args.get('decision_status')
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query = """
+        SELECT a.*, ast.*, q.Parent_Name, q.Parent_Email, q.Student_Name, e.Name as Educator_Name
+        FROM Assessments ast
+        JOIN Appointments a ON ast.Appointment_ID = a.Appointment_ID
+        JOIN Contact_queries q ON a.Query_ID = q.Query_ID
+        JOIN Employees e ON ast.Educator_ID = e.Employee_ID
+        """
+
+        if decision_status == 'pending':
+            query += " WHERE ast.Decision_Made = FALSE"
+        elif decision_status == 'decided':
+            query += " WHERE ast.Decision_Made = TRUE"
+
+        query += " ORDER BY ast.Assessment_Date DESC"
+
+        cursor.execute(query)
+        assessments = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify(assessments), 200
+
+    except Exception as e:
+        print("Error fetching assessments:", e)
+        return jsonify({'error': str(e)}), 500
+@app.route('/make-enrollment-decision', methods=['POST'])
+def make_enrollment_decision():
+    try:
+        data = request.get_json()
+        assessment_id = data.get('assessment_id')
+        enroll = data.get('enroll')  # Boolean
+
+        if assessment_id is None or enroll is None:
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Get assessment and related data
+        cursor.execute("""
+            SELECT ast.*, a.Query_ID, q.Parent_Email, q.Parent_Name, q.Student_Name
+            FROM Assessments ast
+            JOIN Appointments a ON ast.Appointment_ID = a.Appointment_ID
+            JOIN Contact_queries q ON a.Query_ID = q.Query_ID
+            WHERE ast.Assessment_ID = %s
+        """, (assessment_id,))
+
+        assessment = cursor.fetchone()
+        if not assessment:
+            cursor.close()
+            conn.close()
+            return jsonify({'error': 'Assessment not found'}), 404
+
+        # Update assessment with decision
+        cursor.execute(
+            "UPDATE Assessments SET Decision_Made = TRUE, Enrollment_Decision = %s WHERE Assessment_ID = %s",
+            (enroll, assessment_id)
+        )
+
+        conn.commit()
+
+        # Send email notification
+        decision_text = "enrolled" if enroll else "not enrolled"
+        email_body = f"""
+        Dear {assessment['Parent_Name']},
+
+        We have completed the assessment for {assessment['Student_Name']}.
+
+        Based on the assessment, we have decided that {assessment['Student_Name']} will be {decision_text} in our program.
+
+        {"We look forward to welcoming your child to our institution." if enroll else "We appreciate your interest in our institution."}
+
+        Please contact us if you have any questions.
+
+        Thank you,
+        Ishanya Team
+        """
+
+        send_email(
+            assessment['Parent_Email'],
+            f"Enrollment Decision for {assessment['Student_Name']}",
+            email_body
+        )
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'message': f'Decision made: Student will be {decision_text}',
+        }), 200
+
+    except Exception as e:
+        print("Error making enrollment decision:", e)
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/fetch-educators', methods=['GET'])
+def fetch_educators():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query = """
+        SELECT Employee_ID, Educator_Name, Email, Phone
+        FROM Educator
+        """
+        cursor.execute(query)
+        educators = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify(educators), 200
+    except mysql.connector.Error as db_error:
+        error_message = f"Database error: {str(db_error)}"
+        print(error_message)
+        return jsonify({'error': 'Database error occurred', 'details': error_message}), 500
+    except Exception as e:
+        error_message = f"Unexpected error: {str(e)}"
+        print(error_message)
+        return jsonify({'error': 'Unexpected error occurred', 'details': error_message}), 500
+
+@app.route('/all-appointments', methods=['GET'])
+def get_all_appointments():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query = """
+        SELECT a.*, q.Parent_Name, q.Parent_Email, q.Student_Name, q.Query, e.Name as Educator_Name
+        FROM Appointments a
+        JOIN Contact_queries q ON a.Query_ID = q.Query_ID
+        JOIN Employees e ON a.Educator_ID = e.Employee_ID
+        ORDER BY a.Scheduled_Date DESC
+        """
+        cursor.execute(query)
+        appointments = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify(appointments), 200
+
+    except Exception as e:
+        error_message = f"Error fetching all appointments: {str(e)}"
+        print(error_message)
+        return jsonify({'error': error_message}), 500
+
