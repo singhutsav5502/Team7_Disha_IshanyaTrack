@@ -45,18 +45,18 @@ app.config['SECRET_KEY'] = 'c926768d46485785979f3ea0ebcfce929923fa7ad058c712d1fc
 app.config['MAIL_SERVER'] = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.environ.get('SMTP_PORT', 587))
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('SMTP_USERNAME', '')
-app.config['MAIL_PASSWORD'] = os.environ.get('SMTP_PASSWORD', '')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('SENDER_EMAIL', '')
+app.config['MAIL_USERNAME'] = os.environ.get('SMTP_USERNAME', 'team7msishanya@gmail.com')
+app.config['MAIL_PASSWORD'] = os.environ.get('SMTP_PASSWORD', 'rjzobahfvyxdtoye')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('SENDER_EMAIL', 'team7msishanya@gmail.com')
 mail = Mail(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Database Configuration
 db_config = {
-    'host': '',
-    'user': ',
-    'password': '',
-    'database': ''
+    'host': 'team7.mysql.pythonanywhere-services.com',
+    'user': 'team7',
+    'password': 'ishanyateam7',
+    'database': 'team7$Ishanya'
 }
 
 cred = credentials.Certificate("/home/team7/ishanya/serviceAccountKey.json")
@@ -742,38 +742,102 @@ def update_employee_role():
         print("Error updating employee role:", e)
         return jsonify({'error': 'Internal server error'}), 500
 
-user_tokens = {}
-
 @app.route('/save-token', methods=['POST'])
 def save_token():
+    """Saves or updates a user's FCM token."""
     student_id = request.form.get('student_id')
     token = request.form.get('token')
 
     if not student_id or not token:
         return jsonify({'error': 'Missing data'}), 400
 
-    user_tokens[student_id] = token
-    return jsonify({'status': 'token saved'})
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Insert if not exists, otherwise update
+        cursor.execute(
+            "INSERT INTO UserTokens (Student_ID, Token) VALUES (%s, %s) "
+            "ON DUPLICATE KEY UPDATE Token = VALUES(Token)",
+            (student_id, token)
+        )
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({'status': 'Token saved successfully'})
+    except mysql.connector.Error as e:
+        return jsonify({'error': f'Database error: {e}'}), 500
 
 @app.route('/notify/<student_id>', methods=['POST'])
 def notify_user(student_id):
+    """Sends a push notification to a specific student."""
     title = request.json.get('title', 'New Notification')
     body = request.json.get('body', '')
 
-    token = user_tokens.get(student_id)
-    if not token:
-        return jsonify({'error': 'No token found for this student'}), 404
-
-    message = messaging.Message(
-        notification=messaging.Notification(title=title, body=body),
-        token=token,
-    )
-
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Insert notification into database
+        cursor.execute(
+            "INSERT INTO Notifications (Title, Body, Student_ID, Date_Time) VALUES (%s, %s, %s, NOW())",
+            (title, body, student_id)
+        )
+        conn.commit()
+
+        # Fetch user token from database
+        cursor.execute("SELECT Token FROM UserTokens WHERE Student_ID = %s", (student_id,))
+        result = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if not result:
+            return jsonify({'error': 'No token found for this student'}), 404
+
+        token = result[0]
+
+        # Send FCM notification
+        message = messaging.Message(
+            notification=messaging.Notification(title=title, body=body),
+            token=token,
+        )
+
         response = messaging.send(message)
         return jsonify({'message_id': response})
+    except mysql.connector.Error as e:
+        return jsonify({'error': f'Database error: {e}'}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/get-notifications/<student_id>', methods=['GET'])
+def get_notifications(student_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query = """
+        SELECT Title, Body, Date_Time
+        FROM Notifications
+        WHERE Student_ID = %s
+        ORDER BY Date_Time DESC
+        """
+        cursor.execute(query, (student_id,))
+        notifications = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        if not notifications:
+            return jsonify({'message': 'No notifications found for this student'}), 404
+
+        return jsonify({'student_id': student_id, 'notifications': notifications})
+
+    except mysql.connector.Error as e:
+        return jsonify({'error': f'Database error: {e}'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 def send_emails(recipients, subject, body):
     with app.app_context():
@@ -852,7 +916,6 @@ def send_email_broadcast():
         print("Error sending email broadcast:", e)
         return jsonify({'error': f'Failed to send email broadcast: {str(e)}'}), 500
 
-# Endpoint for sending app notifications to multiple students
 @app.route('/notify-multiple', methods=['POST'])
 def notify_multiple():
     try:
@@ -866,9 +929,42 @@ def notify_multiple():
 
         successful_notifications = []
         failed_notifications = []
+        db_failed_notifications = []
 
+        # Insert notifications into the database
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            # Bulk insert notifications
+            notification_values = [(title, body, student_id) for student_id in student_ids]
+            cursor.executemany(
+                "INSERT INTO Notifications (Title, Body, Student_ID, Date_Time) VALUES (%s, %s, %s, NOW())",
+                notification_values
+            )
+
+            conn.commit()
+        except mysql.connector.Error as e:
+            conn.rollback()
+            cursor.close()
+            conn.close()
+            return jsonify({'error': f'Database error: {e}'}), 500
+
+        # Fetch tokens from database
+        cursor.execute(
+            "SELECT Student_ID, Token FROM UserTokens WHERE Student_ID IN ({})".format(
+                ','.join(['%s'] * len(student_ids))
+            ),
+            tuple(student_ids)
+        )
+        tokens = dict(cursor.fetchall())  # Convert result to dictionary {student_id: token}
+
+        cursor.close()
+        conn.close()
+
+        # Send notifications via Firebase
         for student_id in student_ids:
-            token = user_tokens.get(student_id)
+            token = tokens.get(student_id)
             if not token:
                 failed_notifications.append({'student_id': student_id, 'reason': 'No token found'})
                 continue
@@ -883,8 +979,17 @@ def notify_multiple():
             except messaging.UnregisteredError:
                 # Handle invalid/unregistered tokens
                 failed_notifications.append({'student_id': student_id, 'reason': 'Token is no longer valid'})
-                if student_id in user_tokens:
-                    del user_tokens[student_id]
+
+                # Remove invalid token from the database
+                try:
+                    conn = get_db_connection()
+                    cursor = conn.cursor()
+                    cursor.execute("DELETE FROM UserTokens WHERE Student_ID = %s", (student_id,))
+                    conn.commit()
+                    cursor.close()
+                    conn.close()
+                except mysql.connector.Error as e:
+                    print(f"Error removing invalid token for {student_id}: {e}")
             except messaging.FirebaseError as e:
                 failed_notifications.append({'student_id': student_id, 'reason': f'Firebase error: {e.code}'})
             except Exception as e:
@@ -894,10 +999,12 @@ def notify_multiple():
             'success': True,
             'successful_notifications': successful_notifications,
             'failed_notifications': failed_notifications,
+            'db_failed_notifications': db_failed_notifications,
             'summary': {
                 'total': len(student_ids),
                 'successful': len(successful_notifications),
-                'failed': len(failed_notifications)
+                'failed': len(failed_notifications),
+                'db_failed': len(db_failed_notifications)
             }
         })
 
@@ -1203,7 +1310,6 @@ def get_student_programs():
 def fetch_student_performance_by_quarter(student_id, quarter):
     return get_student_performance_by_quarter(student_id, quarter)
 
-
 @app.route('/update-password', methods=['POST'])
 def update_password():
     try:
@@ -1211,38 +1317,39 @@ def update_password():
         user_id = data.get('userId')
         current_password = data.get('currentPassword')
         new_password = data.get('newPassword')
-        
+
         if not user_id or not current_password or not new_password:
             return jsonify({'error': 'Missing required fields'}), 400
-        
+
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        
+
         # First verify the current password
         query = "SELECT * FROM auth WHERE ID = %s AND pwd = %s"
         cursor.execute(query, (user_id, current_password))
         user = cursor.fetchone()
-        
+
         if not user:
             cursor.close()
             conn.close()
             return jsonify({'error': 'Current password is incorrect'}), 401
-        
+
         # Update the password
         update_query = "UPDATE auth SET pwd = %s WHERE ID = %s"
         cursor.execute(update_query, (new_password, user_id))
         conn.commit()
-        
+
         cursor.close()
         conn.close()
-        
+
         return jsonify({
             'message': 'Password updated successfully'
         }), 200
-        
+
     except Exception as e:
         print("Error updating password:", e)
         return jsonify({'error': 'Internal server error'}), 500
+
 
 @app.route('/reports', methods=['POST'])
 def get_reports():
@@ -1384,6 +1491,7 @@ def delete_employee(employee_id):
     except Exception as e:
         print("Error deleting employee:", e)
         return jsonify({'error': f'Failed to delete employee: {str(e)}'}), 500
+
 @app.route('/get_student_performance', methods=['POST'])
 def get_student_performance():
     try:
