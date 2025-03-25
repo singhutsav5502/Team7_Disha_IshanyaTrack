@@ -31,7 +31,8 @@ const LoginPage = () => {
   // If user is already authenticated, redirect to dashboard
   useEffect(() => {
     if (isAuthenticated) {
-      const from = (location.state as any)?.from?.pathname || "/";
+      // const from = (location.state as any)?.from?.pathname || "/";
+      const from = "/";
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, location]);
@@ -47,7 +48,8 @@ const LoginPage = () => {
     try {
       const resultAction = await dispatch(loginUser({ id, password }));
       if (loginUser.fulfilled.match(resultAction)) {
-        const from = (location.state as any)?.from?.pathname || "/";
+        // const from = (location.state as any)?.from?.pathname || "/";
+        const from = "/";
         navigate(from, { replace: true });
       }
     } catch (err) {
