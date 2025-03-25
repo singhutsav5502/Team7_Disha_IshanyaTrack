@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { fetchAllAssessments, makeEnrollmentDecision } from "../../api";
 import { toast } from "react-toastify";
-import { FiSearch, FiCheck, FiX, FiUser } from "react-icons/fi";
+import { FiSearch, FiCheck, FiX, FiUser, FiEye } from "react-icons/fi";
 import { format } from "date-fns";
 import { useSelector } from "react-redux";
 import { getUserType } from "../../store/slices/authSlice";
@@ -25,23 +25,19 @@ interface Assessment {
 const AdminAssessmentsPage: React.FC = () => {
   const userType = useSelector(getUserType);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
-  const [filteredAssessments, setFilteredAssessments] = useState<Assessment[]>(
-    []
-  );
+  const [filteredAssessments, setFilteredAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [decisionFilter, setDecisionFilter] = useState<string>("pending");
   const [showDecisionModal, setShowDecisionModal] = useState<boolean>(false);
-  const [selectedAssessment, setSelectedAssessment] =
-    useState<Assessment | null>(null);
+  const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
 
-  const isAdminOrHigher =
-    userType === USER_ROLES.ADMIN || userType === USER_ROLES.SUPERUSER;
+  const isAdminOrHigher = userType === USER_ROLES.ADMIN || userType === USER_ROLES.SUPERUSER;
 
   useEffect(() => {
     const getAssessments = async () => {
       if (!isAdminOrHigher) return;
-
+      
       setLoading(true);
       try {
         const data = await fetchAllAssessments(decisionFilter);
@@ -61,15 +57,9 @@ const AdminAssessmentsPage: React.FC = () => {
   useEffect(() => {
     const filtered = assessments.filter(
       (assessment) =>
-        assessment.Parent_Name.toLowerCase().includes(
-          searchTerm.toLowerCase()
-        ) ||
-        assessment.Student_Name.toLowerCase().includes(
-          searchTerm.toLowerCase()
-        ) ||
-        assessment.Educator_Name.toLowerCase().includes(
-          searchTerm.toLowerCase()
-        )
+        assessment.Parent_Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        assessment.Student_Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        assessment.Educator_Name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredAssessments(filtered);
   }, [searchTerm, assessments]);
@@ -88,26 +78,17 @@ const AdminAssessmentsPage: React.FC = () => {
     if (!selectedAssessment) return;
 
     try {
-      const response = await makeEnrollmentDecision(
-        selectedAssessment.Assessment_ID,
-        enroll
-      );
-
+      const response = await makeEnrollmentDecision(selectedAssessment.Assessment_ID, enroll);
+      
       if (response.success) {
-        toast.success(
-          `Student ${enroll ? "enrolled" : "not enrolled"} successfully`
-        );
-
-        const updatedAssessments = assessments.map((assessment) =>
+        toast.success(`Student ${enroll ? 'enrolled' : 'not enrolled'} successfully`);
+        
+        const updatedAssessments = assessments.map(assessment => 
           assessment.Assessment_ID === selectedAssessment.Assessment_ID
-            ? {
-                ...assessment,
-                Decision_Made: true,
-                Enrollment_Decision: enroll,
-              }
+            ? { ...assessment, Decision_Made: true, Enrollment_Decision: enroll }
             : assessment
         );
-
+        
         setAssessments(updatedAssessments);
         closeDecisionModal();
       } else {
@@ -116,6 +97,20 @@ const AdminAssessmentsPage: React.FC = () => {
     } catch (error) {
       console.error("Error making enrollment decision:", error);
       toast.error("An error occurred while making the enrollment decision");
+    }
+  };
+
+  // Parse JSON comments safely
+  const parseComments = (commentsStr: string) => {
+    try {
+      if (typeof commentsStr === 'string') {
+        const parsed = JSON.parse(commentsStr);
+        return parsed.comment || "No comments available";
+      }
+      return "No comments available";
+    } catch (e) {
+      console.error("Error parsing comments:", e);
+      return "Error displaying comments";
     }
   };
 
@@ -153,10 +148,10 @@ const AdminAssessmentsPage: React.FC = () => {
                 </button>
               </div>
             </div>
-
+            
             <div className="flex gap-2 mb-4 md:mb-0">
-              <select
-                className="select select-bordered"
+              <select 
+                className="select select-bordered" 
                 value={decisionFilter}
                 onChange={(e) => setDecisionFilter(e.target.value)}
               >
@@ -165,13 +160,13 @@ const AdminAssessmentsPage: React.FC = () => {
                 <option value="all">All Assessments</option>
               </select>
             </div>
-
+            
             <div className="stats shadow">
               <div className="stat">
                 <div className="stat-title">Total Assessments</div>
                 <div className="stat-value">{assessments.length}</div>
                 <div className="stat-desc">
-                  {assessments.filter((a) => !a.Decision_Made).length} pending
+                  {assessments.filter(a => !a.Decision_Made).length} pending
                 </div>
               </div>
             </div>
@@ -223,39 +218,39 @@ const AdminAssessmentsPage: React.FC = () => {
                       <td>{assessment.Assessment_ID}</td>
                       <td>{assessment.Student_Name}</td>
                       <td>{assessment.Educator_Name}</td>
+                      <td>{format(new Date(assessment.Assessment_Date), "MMM d, yyyy")}</td>
                       <td>
-                        {format(
-                          new Date(assessment.Assessment_Date),
-                          "MMM d, yyyy"
-                        )}
-                      </td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            assessment.Decision_Made
-                              ? assessment.Enrollment_Decision
-                                ? "badge-success"
-                                : "badge-error"
-                              : "badge-warning"
-                          }`}
-                        >
+                        <span className={`badge ${
+                          assessment.Decision_Made
+                            ? assessment.Enrollment_Decision
+                              ? 'badge-success'
+                              : 'badge-error'
+                            : 'badge-warning'
+                        }`}>
                           {assessment.Decision_Made
                             ? assessment.Enrollment_Decision
-                              ? "Enrolled"
-                              : "Not Enrolled"
-                            : "Pending"}
+                              ? 'Enrolled'
+                              : 'Not Enrolled'
+                            : 'Pending'}
                         </span>
                       </td>
                       <td>
-                        {!assessment.Decision_Made && (
-                          <button
-                            className="btn btn-sm btn-primary"
-                            onClick={() => openDecisionModal(assessment)}
-                          >
-                            <FiUser className="mr-1" />
-                            Make Decision
-                          </button>
-                        )}
+                        <button
+                          className="btn btn-sm btn-primary"
+                          onClick={() => openDecisionModal(assessment)}
+                        >
+                          {!assessment.Decision_Made ? (
+                            <>
+                              <FiUser className="mr-1" />
+                              Make Decision
+                            </>
+                          ) : (
+                            <>
+                              <FiEye className="mr-1" />
+                              View Details
+                            </>
+                          )}
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -271,63 +266,57 @@ const AdminAssessmentsPage: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-md">
             <h2 className="text-2xl font-bold mb-4">Enrollment Decision</h2>
-
+            
             <div className="mb-4">
-              <p>
-                <strong>Student:</strong> {selectedAssessment.Student_Name}
-              </p>
-              <p>
-                <strong>Educator:</strong> {selectedAssessment.Educator_Name}
-              </p>
-              <p>
-                <strong>Assessment Date:</strong>{" "}
-                {format(
-                  new Date(selectedAssessment.Assessment_Date),
-                  "MMMM d, yyyy"
-                )}
-              </p>
-              <p>
-                <strong>Comments:</strong>
-              </p>
+              <p><strong>Student:</strong> {selectedAssessment.Student_Name}</p>
+              <p><strong>Educator:</strong> {selectedAssessment.Educator_Name}</p>
+              <p><strong>Assessment Date:</strong> {format(new Date(selectedAssessment.Assessment_Date), "MMMM d, yyyy")}</p>
+              <p><strong>Comments:</strong></p>
               <div className="bg-gray-100 p-3 rounded mt-2 whitespace-pre-wrap">
-                {JSON.parse(selectedAssessment.Comments).comment}
+                {parseComments(selectedAssessment.Comments)}
               </div>
             </div>
-
+            
             <div className="flex justify-end gap-3 mt-6">
-              <button className="btn btn-ghost" onClick={closeDecisionModal}>
-                Close
-              </button>
-              <button
-                className="btn btn-error"
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      "Are you sure you want to not enroll this student?"
-                    )
-                  ) {
-                    handleEnrollmentDecision(false);
-                  }
-                }}
-              >
-                <FiX className="mr-1" />
-                Do Not Enroll
-              </button>
-              <button
-                className="btn btn-success"
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      "Are you sure you want to enroll this student?"
-                    )
-                  ) {
-                    handleEnrollmentDecision(true);
-                  }
-                }}
-              >
-                <FiCheck className="mr-1" />
-                Enroll
-              </button>
+              {selectedAssessment.Decision_Made ? (
+                <button 
+                  className="btn btn-primary" 
+                  onClick={closeDecisionModal}
+                >
+                  Close
+                </button>
+              ) : (
+                <>
+                  <button 
+                    className="btn btn-ghost" 
+                    onClick={closeDecisionModal}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="btn btn-error" 
+                    onClick={() => {
+                      if (window.confirm("Are you sure you want to not enroll this student?")) {
+                        handleEnrollmentDecision(false);
+                      }
+                    }}
+                  >
+                    <FiX className="mr-1" />
+                    Do Not Enroll
+                  </button>
+                  <button 
+                    className="btn btn-success" 
+                    onClick={() => {
+                      if (window.confirm("Are you sure you want to enroll this student?")) {
+                        handleEnrollmentDecision(true);
+                      }
+                    }}
+                  >
+                    <FiCheck className="mr-1" />
+                    Enroll
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
