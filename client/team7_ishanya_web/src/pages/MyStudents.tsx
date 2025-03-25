@@ -532,19 +532,19 @@ const MyStudentsPage = () => {
                       <div className="form-control">
                         <label className="label">
                           <span className="label-text">
-                            Cognitive Score (1-5)
+                            Cognitive Score (%)
                           </span>
                         </label>
                         <input
                           type="number"
                           min="1"
-                          max="5"
+                          max="100"
                           value={performanceData.Cognitive_score || 3}
                           onChange={(e) =>
                             setPerformanceData({
                               ...performanceData,
                               Cognitive_score: Math.min(
-                                5,
+                               100,
                                 Math.max(1, parseInt(e.target.value) || 1)
                               ),
                             })
@@ -555,19 +555,19 @@ const MyStudentsPage = () => {
                       <div className="form-control">
                         <label className="label">
                           <span className="label-text">
-                            Communication Score (1-5)
+                            Communication Score (%)
                           </span>
                         </label>
                         <input
                           type="number"
                           min="1"
-                          max="5"
+                          max="100"
                           value={performanceData.Communication_score || 3}
                           onChange={(e) =>
                             setPerformanceData({
                               ...performanceData,
                               Communication_score: Math.min(
-                                5,
+                                100,
                                 Math.max(1, parseInt(e.target.value) || 1)
                               ),
                             })
@@ -578,7 +578,7 @@ const MyStudentsPage = () => {
                       <div className="form-control">
                         <label className="label">
                           <span className="label-text">
-                            Reasoning Score (1-5)
+                            Reasoning Score (%)
                           </span>
                         </label>
                         <input
@@ -590,7 +590,7 @@ const MyStudentsPage = () => {
                             setPerformanceData({
                               ...performanceData,
                               Reasoning_score: Math.min(
-                                5,
+                                100,
                                 Math.max(1, parseInt(e.target.value) || 1)
                               ),
                             })
