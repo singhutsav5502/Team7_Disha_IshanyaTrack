@@ -7,7 +7,7 @@ import {
   fetchStudents,
   fetchStudentPerformance,
   updateStudentPerformance,
-  addAttendance,
+  addOrUpdateAttendance,
 } from "../api";
 import { FiSearch, FiCalendar, FiEdit } from "react-icons/fi";
 
@@ -134,22 +134,23 @@ const MyStudentsPage = () => {
     setAttendanceData((prev) => ({ ...prev, S_ID: student.S_ID }));
     setShowAttendanceModal(true);
   };
-
   const handleAttendanceSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await addAttendance(attendanceData);
+      const response = await addOrUpdateAttendance(attendanceData);
       if (response.success) {
-        toast.success("Attendance recorded successfully");
+        toast.success(response.message);
         setShowAttendanceModal(false);
+        // Optionally, refresh the attendance data here
       } else {
-        toast.error(response.message || "Failed to record attendance");
+        toast.error(response.message || "Failed to record/update attendance");
       }
     } catch (error) {
-      console.error("Error recording attendance:", error);
-      toast.error("An error occurred while recording attendance");
+      console.error("Error recording/updating attendance:", error);
+      toast.error("An error occurred while recording/updating attendance");
     }
   };
+  
 
   // Handle editing metrics
   const handleEditMetrics = async (student, event) => {
@@ -544,7 +545,7 @@ const MyStudentsPage = () => {
                             setPerformanceData({
                               ...performanceData,
                               Cognitive_score: Math.min(
-                               100,
+                                100,
                                 Math.max(1, parseInt(e.target.value) || 1)
                               ),
                             })

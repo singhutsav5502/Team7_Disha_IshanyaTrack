@@ -49,23 +49,35 @@ const CreateStudentPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
+  
     try {
       const response = await create_new_student(formData);
-
+  
       if (response.success) {
         toast.success("Student created successfully!");
         navigate("/manage-students");
       } else {
-        toast.error(`Failed to create student: ${response.message}`);
+        // Handle unsuccessful response
+        toast.error(response.message || "Failed to create student");
       }
     } catch (error) {
-      toast.error(`Error creating student: ${error.message}`);
+      if (error.response && error.response.data) {
+        const errorData = error.response.data;
+        
+        if (errorData.message && errorData.message.includes("parent email already exists")) {
+          toast.error("A student with this parent email already exists. Please use a different email address.");
+        } else if (errorData.message && errorData.message.includes("Database integrity error")) {
+          toast.error("Database error occurred. Please try again or contact support.");
+        } else {
+          toast.error(errorData.message || "An error occurred while creating the student");
+        }
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="container mx-auto py-10">
       <h1 className="text-3xl font-bold mb-6">Create New Student</h1>

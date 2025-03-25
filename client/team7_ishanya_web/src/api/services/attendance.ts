@@ -1,14 +1,18 @@
 import { api } from '../config';
 
-export const addAttendance = async (attendanceData) => {
+export const addOrUpdateAttendance = async (attendanceData) => {
   try {
     const response = await api.post('/attendance', attendanceData);
     return response.data;
   } catch (error) {
-    console.error('Error adding attendance:', error);
-    throw error;
+    if (error.response) {
+      throw error.response.data;
+    } else {
+      throw new Error('Network error');
+    }
   }
 };
+
 
 export const fetchStudentAttendance = async (studentId: string) => {
   try {

@@ -41,18 +41,31 @@ const CreateEmployeePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
+  
     try {
       const response = await create_new_employee(formData);
-
+  
       if (response.success) {
         toast.success("Employee created successfully!");
         navigate("/manage-employees");
       } else {
-        toast.error(`Failed to create employee: ${response.message}`);
+        // Handle unsuccessful response
+        toast.error(response.message || "Failed to create employee");
       }
     } catch (error) {
-      toast.error(`Error creating employee: ${error.message}`);
+      if (error.response && error.response.data) {
+        const errorData = error.response.data;
+        
+        if (errorData.message && errorData.message.includes("email already exists")) {
+          toast.error("An employee with this email already exists. Please use a different email address.");
+        } else if (errorData.message && errorData.message.includes("Database integrity error")) {
+          toast.error("Database error occurred. Please try again or contact support.");
+        } else {
+          toast.error(errorData.message || "An error occurred while creating the employee");
+        }
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

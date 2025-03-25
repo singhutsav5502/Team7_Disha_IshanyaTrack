@@ -397,7 +397,7 @@ def add_program():
         program_name = data.get('Program_Name')
 
         if not program_name:
-            return jsonify({'error': 'Program_Name is required'}), 400
+            return jsonify({'error': 'Please set program name.'}), 400
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -668,17 +668,43 @@ def create_new_employee():
 
         return jsonify({'success': True, 'message': 'Employee created successfully', 'employee_id': employee_id}), 201
 
+    except mysql.connector.IntegrityError as e:
+        error_message = str(e)
+        if 'Duplicate entry' in error_message:
+            if 'Email' in error_message:
+                return jsonify({'success': False, 'message': 'An employee with this email already exists. Please use a different email address.'}), 409
+            else:
+                return jsonify({'success': False, 'message': 'Database integrity error: ' + error_message}), 409
+        return jsonify({'success': False, 'message': 'Database integrity error: ' + error_message}), 500
+    except mysql.connector.Error as e:
+        return jsonify({'success': False, 'message': f'Database error: {str(e)}'}), 500
     except Exception as e:
         print("Error creating employee:", e)
-        return jsonify({'error': 'Internal server error' + str(e)}), 500
-
+        return jsonify({'success': False, 'message': f'Failed to create employee: {str(e)}'}), 500
+        
+        
 @app.route('/create_new_student', methods=['POST'])
 def create_new_student():
     try:
         data = request.get_json()
+        parent_email = data.get('Parent_Email')
+        
         conn = get_db_connection()
         cursor = conn.cursor()
-
+        
+        # Check if email already exists
+        cursor.execute("SELECT * FROM Student WHERE Parent_Email = %s", (parent_email,))
+        existing_student = cursor.fetchone()
+        
+        if existing_student:
+            cursor.close()
+            conn.close()
+            return jsonify({
+                'success': False, 
+                'message': 'A student with this parent email already exists. Please use a different email address.'
+            }), 409
+        
+        # Continue with student creation if email is unique
         cursor.execute("SELECT MAX(CAST(SUBSTRING(S_ID, 2) AS UNSIGNED)) FROM Student")
         result = cursor.fetchone()
         last_id = result[0] if result[0] else 0
@@ -705,9 +731,19 @@ def create_new_student():
 
         return jsonify({'success': True, 'message': 'Student created successfully', 'student_id': student_id}), 201
 
+    except mysql.connector.IntegrityError as e:
+        error_message = str(e)
+        if 'Duplicate entry' in error_message:
+            if 'Parent_Email' in error_message:
+                return jsonify({'success': False, 'message': 'A student with this parent email already exists. Please use a different email address.'}), 409
+            else:
+                return jsonify({'success': False, 'message': 'Database integrity error: ' + error_message}), 409
+        return jsonify({'success': False, 'message': 'Database integrity error: ' + error_message}), 500
+    except mysql.connector.Error as e:
+        return jsonify({'success': False, 'message': f'Database error: {str(e)}'}), 500
     except Exception as e:
         print("Error creating student:", e)
-        return jsonify({'error': 'Internal server error' + str(e)}), 500
+        return jsonify({'success': False, 'message': f'Failed to create student: {str(e)}'}), 500
 
 @app.route('/update-employee-role', methods=['POST'])
 def update_employee_role():
@@ -1184,29 +1220,50 @@ def add_attendance():
             return jsonify({'error': 'Student ID and Date are required'}), 400
 
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
 
-        # Insert into Attendance table
+        # Check if attendance record already exists for this student and date
         cursor.execute(
-            "INSERT INTO Attendance (S_ID, Date, Present) VALUES (%s, %s, %s)",
-            (student_id, date, present)
+            "SELECT * FROM Attendance WHERE S_ID = %s AND Date = %s",
+            (student_id, date)
         )
+        existing_record = cursor.fetchone()
 
-        conn.commit()
-        attendance_id = cursor.lastrowid
-
-        cursor.close()
-        conn.close()
-
-        return jsonify({
-            'success': True,
-            'message': 'Attendance recorded successfully',
-            'attendance_id': attendance_id
-        }), 201
+        if existing_record:
+            # Update existing record
+            cursor.execute(
+                "UPDATE Attendance SET Present = %s WHERE S_ID = %s AND Date = %s",
+                (present, student_id, date)
+            )
+            conn.commit()
+            cursor.close()
+            conn.close()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Attendance updated successfully'
+            }), 200
+        else:
+            # Insert new record
+            cursor.execute(
+                "INSERT INTO Attendance (S_ID, Date, Present) VALUES (%s, %s, %s)",
+                (student_id, date, present)
+            )
+            conn.commit()
+            attendance_id = cursor.lastrowid
+            cursor.close()
+            conn.close()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Attendance recorded successfully',
+                'attendance_id': attendance_id
+            }), 201
 
     except Exception as e:
-        print("Error adding attendance:", e)
-        return jsonify({'success': False, 'message': f'Failed to record attendance: {str(e)}'}), 500
+        print("Error adding/updating attendance:", e)
+        return jsonify({'success': False, 'message': f'Failed to record/update attendance: {str(e)}'}), 500
+
 
 @app.route('/attendance/<string:student_id>', methods=['GET'])
 def get_attendance(student_id):

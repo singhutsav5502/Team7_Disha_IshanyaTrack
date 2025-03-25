@@ -52,7 +52,8 @@ const ManageProgramsPage: React.FC = () => {
       setNewProgramName("");
       dispatch(refetchProgramData());
     } catch (err) {
-      toast.error(`Failed to add program ${err}`);
+      if(err.response.data) toast.error(`${err.response.data.error}`);
+      else toast.error(`Failed to add program.`);
     } finally {
       setIsLoading(false);
     }
@@ -67,7 +68,7 @@ const ManageProgramsPage: React.FC = () => {
       dispatch(refetchProgramData());
       if (selectedProgram === programId) setSelectedProgram(null);
     } catch (err) {
-      toast.error(`Failed to remove program ${err}`);
+      toast.error(`Failed to remove program, ${err.error}`);
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +86,7 @@ const ManageProgramsPage: React.FC = () => {
       setSelectedStudent("");
       dispatch(refetchProgramData());
     } catch (err) {
-      toast.error("Failed to add student to program");
+      toast.error(`Failed to add student to program: ${err.response.data.error}`);
     } finally {
       setIsLoading(false);
     }
@@ -103,7 +104,7 @@ const ManageProgramsPage: React.FC = () => {
       setSelectedEducator("");
       dispatch(refetchProgramData());
     } catch (err) {
-      toast.error("Failed to add educator to program");
+      toast.error(`Failed to add educator to program: ${err.response.data.error}`);
     } finally {
       setIsLoading(false);
     }
