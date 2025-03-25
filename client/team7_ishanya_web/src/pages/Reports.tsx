@@ -238,7 +238,6 @@ const ReportsPage = () => {
               <table className="table w-full">
                 <thead>
                   <tr>
-                    <th>Report ID</th>
                     <th>Student Name</th>
                     <th>Student ID</th>
                     <th>Quarter</th>
