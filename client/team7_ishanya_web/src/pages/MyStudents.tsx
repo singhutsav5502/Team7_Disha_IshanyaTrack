@@ -158,7 +158,12 @@ const MyStudentsPage = () => {
     await fetchPerformanceData(student.S_ID, 1); // Default to first quarter
     setShowMetricsModal(true);
   };
-
+  const handleRemoveMetric = (index) => {
+    const updatedMetrics = [...additionalMetrics];
+    updatedMetrics.splice(index, 1);
+    setAdditionalMetrics(updatedMetrics);
+    toast.info("Metric removed");
+  };
   // Fetch performance data for a specific quarter
   const fetchPerformanceData = async (studentId, quarter) => {
     try {
@@ -497,7 +502,7 @@ const MyStudentsPage = () => {
       )}
 
       {showMetricsModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 overflow-y-scroll">
           <div className="bg-white rounded-lg p-8 shadow-xl max-w-3xl w-full">
             <h3 className="text-2xl font-bold mb-4">
               Performance Metrics - {selectedStudent?.Fname}{" "}
@@ -613,6 +618,7 @@ const MyStudentsPage = () => {
                               <th>Metric Name</th>
                               <th>Value (1-5)</th>
                               <th>Comment</th>
+                              <th>Action</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -656,6 +662,14 @@ const MyStudentsPage = () => {
                                     }}
                                     className="input input-bordered w-full"
                                   />
+                                </td>
+                                <td>
+                                  <button
+                                    className="btn btn-error btn-sm"
+                                    onClick={() => handleRemoveMetric(index)}
+                                  >
+                                    Remove
+                                  </button>
                                 </td>
                               </tr>
                             ))}
