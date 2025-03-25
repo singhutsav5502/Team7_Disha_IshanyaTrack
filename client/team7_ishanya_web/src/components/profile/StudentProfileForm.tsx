@@ -114,7 +114,7 @@ const StudentProfileForm = ({
           <select
             className="select select-bordered w-full"
             value={formData.Gender || ""}
-            onChange={(e) => handleSelectChange("Gender")(e.target.value)}
+            onChange={(e) => handleSelectChange("Gender")(e.target)}
             disabled={!isFieldEditable("Gender")}
           >
             <option value="" disabled>
@@ -186,9 +186,9 @@ const StudentProfileForm = ({
             className="select select-bordered w-full"
             value={formData.Primary_Diagnosis || ""}
             onChange={(e) =>
-              handleSelectChange("Primary_Diagnosis")(e.target.value)
+              handleSelectChange("Primary_Diagnosis")(e.target)
             }
-            disabled={!canEdit}
+            disabled={!canEdit || !isEditing}
           >
             <option value="" disabled>
               Select primary diagnosis
@@ -210,8 +210,8 @@ const StudentProfileForm = ({
           <select
             className="select select-bordered w-full"
             value={formData.Comorbidity || ""}
-            onChange={(e) => handleSelectChange("Comorbidity")(e.target.value)}
-            disabled={!canEdit}
+            onChange={(e) => handleSelectChange("Comorbidity")(e.target)}
+            disabled={!canEdit || !isEditing}
           >
             <option value="" disabled>
               Select comorbidity
@@ -236,7 +236,7 @@ const StudentProfileForm = ({
             value={formData.UDID || ""}
             onChange={handleInputChange}
             className="input input-bordered w-full"
-            readOnly={!canEdit}
+            readOnly={!canEdit || !isEditing}
           />
         </div>
       </div>
@@ -250,9 +250,9 @@ const StudentProfileForm = ({
             className="select select-bordered w-full"
             value={formData.Enrollment_Year || ""}
             onChange={(e) =>
-              handleSelectChange("Enrollment_Year")(e.target.value)
+              handleSelectChange("Enrollment_Year")(e.target)
             }
-            disabled={!canEdit}
+            disabled={!canEdit || !isEditing}
           >
             <option value="" disabled>
               Select enrollment year
@@ -274,8 +274,8 @@ const StudentProfileForm = ({
           <select
             className="select select-bordered w-full"
             value={formData.Status || ""}
-            onChange={(e) => handleSelectChange("Status")(e.target.value)}
-            disabled={!isEditing || !canEdit}
+            onChange={(e) => handleSelectChange("Status")(e.target)}
+            disabled={!canEdit || !isEditing}
           >
             <option value="" disabled>
               Select status
@@ -296,8 +296,8 @@ const StudentProfileForm = ({
           <select
             className="select select-bordered w-full"
             value={formData.Timings || ""}
-            onChange={(e) => handleSelectChange("Timings")(e.target.value)}
-            disabled={!canEdit}
+            onChange={(e) => handleSelectChange("Timings")(e.target)}
+            disabled={!canEdit || !isEditing}
           >
             <option value="" disabled>
               Select timing
@@ -348,7 +348,7 @@ const StudentProfileForm = ({
 
                       handleInputChange(syntheticEvent);
                     }}
-                    disabled={!canEdit}
+                    disabled={!canEdit || !isEditing}
                   />
                   <span className="label-text">{item.label}</span>
                 </label>
@@ -366,8 +366,8 @@ const StudentProfileForm = ({
           <select
             className="select select-bordered w-full"
             value={formData.Session_Type || ""}
-            onChange={(e) => handleSelectChange("Session_Type")(e.target.value)}
-            disabled={!canEdit}
+            onChange={(e) => handleSelectChange("Session_Type")(e.target)}
+            disabled={!canEdit || !isEditing}
           >
             <option value="" disabled>
               Select session type
@@ -392,7 +392,7 @@ const StudentProfileForm = ({
             value={formData.Primary_E_ID || ""}
             onChange={handleInputChange}
             className="input input-bordered w-full"
-            readOnly={!canEdit}
+            readOnly={!canEdit || !isEditing}
           />
         </div>
       </div>
@@ -408,7 +408,7 @@ const StudentProfileForm = ({
             value={formData.Secondary_E_ID || ""}
             onChange={handleInputChange}
             className="input input-bordered w-full"
-            readOnly={!canEdit}
+            readOnly={!canEdit || !isEditing}
           />
         </div>
       </div>
