@@ -1,0 +1,153 @@
+CREATE TABLE auth (
+    id VARCHAR(255) PRIMARY KEY,
+    pwd VARCHAR(255) NOT NULL,
+    type INT NOT NULL
+);
+
+CREATE TABLE Student (
+    S_ID VARCHAR(255) PRIMARY KEY,
+    Fname VARCHAR(255),
+    Lname VARCHAR(255),
+    Photo BLOB,
+    Gender VARCHAR(10),
+    DOB DATE,
+    Primary_Diagnosis VARCHAR(255),
+    Comorbidity TINYINT,
+    UDID TINYINT,
+    Enrollment_Year INT,
+    Status VARCHAR(255),
+    Email VARCHAR(255),
+    Sessions INT,
+    Timings VARCHAR(255),
+    Days_of_Week VARCHAR(255),
+    Primary_E_ID VARCHAR(255),
+    Secondary_E_ID VARCHAR(255),
+    Session_Type VARCHAR(255),
+    Father VARCHAR(255),
+    Mother VARCHAR(255),
+    Blood_Grp VARCHAR(10),
+    Allergies VARCHAR(255),
+    Contact_No VARCHAR(20),
+    Alt_Contact_No VARCHAR(20),
+    Parent_Email VARCHAR(255)
+);
+
+CREATE TABLE Employees (
+    Employee_ID VARCHAR(255) PRIMARY KEY,
+    Name VARCHAR(255),
+    Gender VARCHAR(10),
+    Photo VARCHAR(255),
+    Designation VARCHAR(255),
+    Department VARCHAR(255),
+    Employment_Type VARCHAR(255),
+    Email VARCHAR(255),
+    Phone VARCHAR(20),
+    Date_of_Birth DATE,
+    Date_of_Joining DATE,
+    Date_of_Leaving DATE,
+    Status VARCHAR(255),
+    Tenure VARCHAR(255),
+    Work_Location VARCHAR(255),
+    Emergency_Contact_Name VARCHAR(255),
+    Emergency_Contact_No VARCHAR(20),
+    Blood_Group VARCHAR(10)
+);
+
+CREATE TABLE Educator (
+    Employee_ID VARCHAR(255) PRIMARY KEY REFERENCES Employees(Employee_ID),
+    Educator_Name VARCHAR(255),
+    Photo VARCHAR(255),
+    Designation VARCHAR(255),
+    Email VARCHAR(255),
+    Phone VARCHAR(20),
+    Date_of_Birth DATE,
+    Date_of_Joining DATE,
+    Work_Location VARCHAR(255)
+);
+
+CREATE TABLE Attendance (
+    S_ID VARCHAR(255) REFERENCES Student(S_ID),
+    Date DATE,
+    Present BOOLEAN,
+    PRIMARY KEY (S_ID, Date)
+);
+
+CREATE TABLE Performance_1 (
+    Performance_ID INT PRIMARY KEY,
+    Student_ID VARCHAR(255) REFERENCES Student(S_ID),
+    Cognitive_Score DECIMAL,
+    Communication_Score DECIMAL,
+    Reasoning_Score DECIMAL,
+    Disability_Score DECIMAL,
+    Additional_Metrics JSON
+);
+
+CREATE TABLE Performance_2 (
+    Performance_ID INT PRIMARY KEY,
+    Student_ID VARCHAR(255) REFERENCES Student(S_ID),
+    Cognitive_Score DECIMAL,
+    Communication_Score DECIMAL,
+    Reasoning_Score DECIMAL,
+    Disability_Score DECIMAL,
+    Additional_Metrics JSON
+);
+
+CREATE TABLE Performance_3 (
+    Performance_ID INT PRIMARY KEY,
+    Student_ID VARCHAR(255) REFERENCES Student(S_ID),
+    Cognitive_Score DECIMAL,
+    Communication_Score DECIMAL,
+    Reasoning_Score DECIMAL,
+    Disability_Score DECIMAL,
+    Additional_Metrics JSON
+);
+
+CREATE TABLE Performance_4 (
+    Performance_ID INT PRIMARY KEY,
+    Student_ID VARCHAR(255) REFERENCES Student(S_ID),
+    Cognitive_Score DECIMAL,
+    Communication_Score DECIMAL,
+    Reasoning_Score DECIMAL,
+    Disability_Score DECIMAL,
+    Additional_Metrics JSON
+);
+
+CREATE TABLE Contact_queries (
+    Query_ID INT PRIMARY KEY,
+    Parent_Name VARCHAR(255),
+    Parent_Email VARCHAR(255),
+    Student_Name VARCHAR(255),
+    Query TEXT
+);
+
+CREATE TABLE Report (
+    Student_ID VARCHAR(255) REFERENCES Student(S_ID),
+    Quarter VARCHAR(255),
+    Report_URL VARCHAR(255),
+    PRIMARY KEY (Student_ID, Quarter)
+);
+
+CREATE TABLE Notifications (
+    Notification_ID INT PRIMARY KEY,
+    Title VARCHAR(255),
+    Description VARCHAR(255),
+    Link VARCHAR(255),
+    Media BLOB
+);
+
+CREATE TABLE Programs (
+    Program_ID INT PRIMARY KEY,
+    Program_Name VARCHAR(255)
+);
+
+CREATE TABLE Program_Employees (
+    Employee_ID VARCHAR(255) REFERENCES Employees(Employee_ID),
+    Program_ID INT REFERENCES Programs(Program_ID),
+    PRIMARY KEY (Employee_ID, Program_ID)
+);
+
+CREATE TABLE Program_Students (
+    Student_ID VARCHAR(255) REFERENCES Student(S_ID),
+    Program_ID BIGINT REFERENCES Programs(Program_ID),
+    PRIMARY KEY (Student_ID, Program_ID)
+);
