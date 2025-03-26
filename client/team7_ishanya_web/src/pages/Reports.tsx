@@ -93,6 +93,7 @@ const ReportsPage = () => {
   }, [searchTerm, reports]);
 
   // Handle report upload
+  //  TODO: EXTRACT HANDLE REPORT
   const handleUploadReport = async (e) => {
     e.preventDefault();
     

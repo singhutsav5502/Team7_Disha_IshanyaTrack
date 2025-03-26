@@ -6,7 +6,7 @@ import { loginUser } from "../../store/slices/authSlice";
 import { toast } from "react-toastify";
 import banner_bg from "/banner_bg.png"
 import banner_man from "/banner_man.png"
-import ishanya_logo from "/ishanya_logo.png"
+import disha_logo from "/disha_logo.png"
 import { submitContactQuery } from "../../api";
 
 const LoginPage = () => {
@@ -120,12 +120,12 @@ const LoginPage = () => {
         <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
           <div className="text-center mb-6">
             <img 
-              src={ishanya_logo} 
-              alt="Ishanya India Logo" 
+              src={disha_logo} 
+              alt="Disha India Logo" 
               className="h-20 mx-auto mb-4"
             />
             <h2 className="text-2xl font-bold text-green-600">
-              {showContactForm ? "Contact Us" : "Ishanya Portal Login"}
+              {showContactForm ? "Contact Us" : "Disha Portal Login"}
             </h2>
             <p className="mt-2 text-gray-600">
               {showContactForm 

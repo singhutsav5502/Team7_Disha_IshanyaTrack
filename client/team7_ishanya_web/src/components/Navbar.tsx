@@ -249,12 +249,12 @@ const Navbar = () => {
               onClick={() => navigate("/")}
             >
               <img
-                src="/ishanya_logo.png"
-                alt="Ishanya India"
+                src="/disha_logo.png"
+                alt="Disha"
                 className="h-10"
               />
               <span className="ml-3 font-bold text-lg hidden md:block">
-                Ishanya Portal
+                Disha Portal
               </span>
             </div>
 
@@ -463,8 +463,8 @@ const Navbar = () => {
               <div className="flex flex-col h-full">
                 <div className="flex justify-between items-center p-4 border-b">
                   <img
-                    src="/ishanya_logo.png"
-                    alt="Ishanya India"
+                    src="/disha_logo.png"
+                    alt="Disha"
                     className="h-10"
                   />
                   <button
