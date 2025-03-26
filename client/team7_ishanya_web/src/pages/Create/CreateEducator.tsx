@@ -85,7 +85,7 @@ const AssignEducatorPage = () => {
         // Handle specific error messages from the backend
         if (response.message.includes("Employee ID already exists")) {
           toast.error(
-            "An educator with this Employee ID already exists. Please use a different ID."
+            "This employee is already an educator! Please use Manage Programs to assign them to a new program."
           );
         } else if (response.message.includes("Database integrity error")) {
           toast.error(
