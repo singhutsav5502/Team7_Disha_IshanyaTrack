@@ -1133,6 +1133,12 @@ def resolve_contact_query(query_id):
                 'message': 'Cannot resolve query with active appointments. Please complete or cancel the appointment first.'
             }), 400
 
+        # Set Query_ID to NULL for completed or cancelled appointments
+        cursor.execute(
+            "UPDATE Appointments SET Query_ID = NULL WHERE Query_ID = %s AND Status IN ('Completed', 'Cancelled')",
+            (query_id,)
+        )
+
         # Delete the query
         cursor.execute("DELETE FROM Contact_queries WHERE Query_ID = %s", (query_id,))
         conn.commit()
@@ -1147,7 +1153,7 @@ def resolve_contact_query(query_id):
 
     except Exception as e:
         print("Error resolving contact query:", e)
-        return jsonify({'success': False, 'message': 'Failed to resolve query'}), 500
+        return jsonify({'success': False, 'message': 'Failed to resolve query', 'error': str(e)}), 500
 
 
 @app.route('/get_educator_by_id', methods=['POST'])

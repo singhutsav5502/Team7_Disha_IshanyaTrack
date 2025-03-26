@@ -96,11 +96,23 @@ const ContactQueriesPage: React.FC = () => {
         // Remove the resolved query from the list
         setQueries(queries.filter((query) => query.Query_ID !== queryId));
       } else {
-        toast.error(response.message || "Failed to resolve query");
+        // Display a user-friendly error message
+        if (
+          response.message &&
+          response.message.includes("active appointments")
+        ) {
+          toast.error(
+            "This query has active appointments scheduled. Please complete or cancel them before resolving the query."
+          );
+        } else {
+          toast.error(response.message || "Failed to resolve query");
+        }
       }
     } catch (error) {
       console.error("Error resolving query:", error);
-      toast.error("An error occurred while resolving the query");
+      toast.error(
+        "An error occurred while resolving the query. Please try again later."
+      );
     }
   };
 
@@ -144,11 +156,16 @@ const ContactQueriesPage: React.FC = () => {
       } else {
         toast.error(response.message || "Failed to schedule appointment");
       }
-    }  catch (error) {
+    } catch (error) {
       if (error.message && error.message.includes("Network is unreachable")) {
-        toast.error("Network connection issue. Please check your internet connection and try again.");
+        toast.error(
+          "Network connection issue. Please check your internet connection and try again."
+        );
       } else {
-        toast.error("Failed to schedule appointment: " + (error.message || "Unknown error"));
+        toast.error(
+          "Failed to schedule appointment: " +
+            (error.message || "Unknown error")
+        );
       }
       console.error("Detailed error:", error);
     }

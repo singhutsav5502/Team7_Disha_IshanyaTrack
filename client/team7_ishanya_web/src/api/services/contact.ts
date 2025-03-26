@@ -42,9 +42,6 @@ export const resolveContactQuery = async (queryId: number) => {
     };
   } catch (error) {
     console.error("Error resolving contact query:", error);
-    return {
-      success: false,
-      message: error.response?.data?.message || error.message
-    };
+    throw error;
   }
 };
