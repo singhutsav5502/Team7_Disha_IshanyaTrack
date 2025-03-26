@@ -386,7 +386,7 @@ const CreateEmployeePage = () => {
               <div className="col-span-1 md:col-span-2">
                 <button
                   type="submit"
-                  className={`btn btn-primary w-full ${loading ? "loading" : ""}`}
+                  className={`btn btn-primary text-white w-full ${loading ? "loading" : ""}`}
                   disabled={loading}
                 >
                   {loading ? "Creating..." : "Create Employee"}

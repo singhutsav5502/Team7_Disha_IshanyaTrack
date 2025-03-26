@@ -403,7 +403,7 @@ const MyStudentsPage = () => {
                       <td>
                         <div className="flex space-x-2">
                           <button
-                            className="btn btn-sm btn-primary"
+                            className="btn btn-sm btn-primary text-white"
                             onClick={(e) => handleAddAttendance(student, e)}
                           >
                             <FiCalendar className="mr-1" />
@@ -493,7 +493,7 @@ const MyStudentsPage = () => {
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="btn btn-primary text-white">
                   Submit
                 </button>
               </div>
@@ -732,7 +732,7 @@ const MyStudentsPage = () => {
                       </div>
                     </div>
                     <button
-                      className="btn btn-primary mt-2"
+                      className="btn btn-primary text-white mt-2"
                       onClick={handleAddMetric}
                     >
                       Add Metric
@@ -754,7 +754,7 @@ const MyStudentsPage = () => {
               >
                 Cancel
               </button>
-              <button className="btn btn-primary" onClick={handleSaveMetrics}>
+              <button className="btn btn-primary text-white" onClick={handleSaveMetrics}>
                 Save Changes
               </button>
             </div>

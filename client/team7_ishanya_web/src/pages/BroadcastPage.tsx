@@ -278,7 +278,7 @@ const BroadcastPage = () => {
               </div>
 
               <button
-                className={`btn btn-primary btn-lg w-full mt-6 ${loading ? "loading" : ""}`}
+                className={`btn btn-primary text-white btn-lg w-full mt-6 ${loading ? "loading" : ""}`}
                 onClick={sendNotifications}
                 disabled={loading}
               >
@@ -352,7 +352,7 @@ const BroadcastPage = () => {
               </div>
 
               <button
-                className={`btn btn-primary btn-lg w-full mt-6 ${loading ? "loading" : ""}`}
+                className={`btn btn-primary text-white btn-lg w-full mt-6 ${loading ? "loading" : ""}`}
                 onClick={sendEmails}
                 disabled={loading}
               >

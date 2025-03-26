@@ -23,7 +23,7 @@ const UnauthorizedPage = () => {
         </p>
         
         <button 
-          className="btn btn-primary btn-lg mt-4"
+          className="btn btn-primary text-white btn-lg mt-4"
           onClick={() => navigate("/")}
         >
           Return to Dashboard

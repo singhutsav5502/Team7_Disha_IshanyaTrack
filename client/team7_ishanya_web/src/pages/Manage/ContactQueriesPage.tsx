@@ -258,7 +258,7 @@ const ContactQueriesPage: React.FC = () => {
                       </td>
                       <td className="flex gap-2">
                         <button
-                          className="btn btn-sm btn-primary"
+                          className="btn btn-sm btn-primary text-white"
                           onClick={() => openScheduleModal(query)}
                         >
                           <FiCalendar className="mr-1" />
@@ -358,7 +358,7 @@ const ContactQueriesPage: React.FC = () => {
                 Cancel
               </button>
               <button
-                className="btn btn-primary"
+                className="btn btn-primary text-white"
                 onClick={handleScheduleAppointment}
               >
                 Schedule

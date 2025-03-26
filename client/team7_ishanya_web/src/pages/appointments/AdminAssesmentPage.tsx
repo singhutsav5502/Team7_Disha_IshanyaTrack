@@ -236,7 +236,7 @@ const AdminAssessmentsPage: React.FC = () => {
                       </td>
                       <td>
                         <button
-                          className="btn btn-sm btn-primary"
+                          className="btn btn-sm btn-primary text-white"
                           onClick={() => openDecisionModal(assessment)}
                         >
                           {!assessment.Decision_Made ? (
@@ -280,7 +280,7 @@ const AdminAssessmentsPage: React.FC = () => {
             <div className="flex justify-end gap-3 mt-6">
               {selectedAssessment.Decision_Made ? (
                 <button 
-                  className="btn btn-primary" 
+                  className="btn btn-primary text-white" 
                   onClick={closeDecisionModal}
                 >
                   Close

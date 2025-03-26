@@ -133,7 +133,7 @@ const ManageProgramsPage: React.FC = () => {
                     onChange={(e) => setNewProgramName(e.target.value)}
                   />
                   <button
-                    className={`btn btn-primary ${isLoading ? "loading" : ""} mt-2`}
+                    className={`btn btn-primary text-white ${isLoading ? "loading" : ""} mt-2`}
                     onClick={handleAddProgram}
                     disabled={isLoading}
                   >
@@ -225,7 +225,7 @@ const ManageProgramsPage: React.FC = () => {
                       ))}
                     </select>
                     <button
-                      className={`btn btn-primary ${isLoading ? "loading" : ""} mt-2`}
+                      className={`btn btn-primary text-white ${isLoading ? "loading" : ""} mt-2`}
                       onClick={handleAddStudent}
                       disabled={isLoading || !selectedStudent}
                     >
@@ -256,7 +256,7 @@ const ManageProgramsPage: React.FC = () => {
                       ))}
                     </select>
                     <button
-                      className={`btn btn-primary ${isLoading ? "loading" : ""} mt-2`}
+                      className={`btn btn-primary text-white ${isLoading ? "loading" : ""} mt-2`}
                       onClick={handleAddEducator}
                       disabled={isLoading || !selectedEducator}
                     >

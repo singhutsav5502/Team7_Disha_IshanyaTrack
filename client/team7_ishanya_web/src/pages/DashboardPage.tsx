@@ -372,9 +372,9 @@ const DashboardPage = () => {
       return (
         <div className="mt-8">
           <h3 className="text-xl font-bold mb-4">Administrative Actions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 ">
             <button
-              className="btn btn-primary h-24"
+              className="btn btn-primary text-white h-24"
               onClick={() => navigate("/manage/students")}
             >
               <FiUsers className="w-6 h-6 mr-2" /> Manage Students

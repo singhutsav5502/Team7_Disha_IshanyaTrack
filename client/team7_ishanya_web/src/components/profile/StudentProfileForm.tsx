@@ -507,7 +507,7 @@ const StudentProfileForm = ({
       {(canEdit || isStudent) && (
         <div className="col-span-1 md:col-span-2">
           <button
-            className={`btn btn-primary w-full mt-4 ${isEditing ? "" : "btn-disabled"}`}
+            className={`btn btn-primary text-white w-full mt-4 ${isEditing ? "" : "btn-disabled"}`}
             onClick={handleUpdateClick}
             disabled={!isEditing}
           >

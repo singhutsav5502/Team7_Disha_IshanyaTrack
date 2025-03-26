@@ -152,7 +152,7 @@ const ReportsPage = () => {
         
         {userType >= 1 && (
           <button 
-            className="btn btn-primary" 
+            className="btn btn-primary text-white" 
             onClick={() => setShowUploadModal(true)}
           >
             <FiUpload className="mr-2" />
@@ -255,7 +255,7 @@ const ReportsPage = () => {
                           href={report.Report_URL} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="btn btn-sm btn-primary"
+                          className="btn btn-sm btn-primary text-white"
                         >
                           <FiDownload className="mr-1" />
                           View Report
@@ -337,7 +337,7 @@ const ReportsPage = () => {
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="btn btn-primary text-white">
                   Upload Report
                 </button>
               </div>

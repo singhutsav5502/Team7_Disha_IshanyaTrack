@@ -340,7 +340,7 @@ const EducatorAppointmentsPage: React.FC = () => {
                       <td>
                         {appointment.Status === 'Scheduled' && (
                           <button
-                            className="btn btn-sm btn-primary"
+                            className="btn btn-sm btn-primary text-white"
                             onClick={() => openAssessmentModal(appointment)}
                           >
                             <FiCheck className="mr-1" />
@@ -398,7 +398,7 @@ const EducatorAppointmentsPage: React.FC = () => {
                 Cancel
               </button>
               <button 
-                className="btn btn-primary" 
+                className="btn btn-primary text-white" 
                 onClick={handleCompleteAppointment}
               >
                 Complete & Submit

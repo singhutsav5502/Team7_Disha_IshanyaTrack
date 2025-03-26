@@ -117,7 +117,7 @@ const ManagePermission = () => {
                 <div className="col-span-1 md:col-span-2">
                   <button
                     type="submit"
-                    className={`btn btn-primary w-full ${updating ? "loading" : ""}`}
+                    className={`btn btn-primary text-white w-full ${updating ? "loading" : ""}`}
                     disabled={updating}
                   >
                     {updating ? "Updating..." : "Update Permission"}

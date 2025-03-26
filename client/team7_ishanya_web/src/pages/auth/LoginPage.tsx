@@ -196,7 +196,7 @@ const LoginPage = () => {
               </div>
               <button
                 type="submit"
-                className={`btn btn-primary w-full ${submitting ? "loading" : ""}`}
+                className={`btn btn-primary text-white w-full ${submitting ? "loading" : ""}`}
                 disabled={submitting}
               >
                 {submitting ? "Submitting..." : "Submit Query"}
@@ -244,7 +244,7 @@ const LoginPage = () => {
                 </div>
                 <button
                   type="submit"
-                  className="btn btn-primary w-full"
+                  className="btn btn-primary text-white w-full"
                 >
                   Login
                 </button>

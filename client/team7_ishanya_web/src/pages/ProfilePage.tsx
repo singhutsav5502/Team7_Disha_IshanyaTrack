@@ -181,7 +181,7 @@ const ProfilePage = () => {
           <h2 className="text-2xl font-bold">Profile Information</h2>
           {canEdit() && (
             <button
-              className="btn btn-primary"
+              className="btn btn-primary text-white"
               onClick={() => setIsEditing(!isEditing)}
             >
               {isEditing ? (

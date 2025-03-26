@@ -156,7 +156,7 @@ const ChangePasswordPage = () => {
               <div className="form-control mt-6">
                 <button 
                   type="submit" 
-                  className="btn btn-primary w-full"
+                  className="btn btn-primary text-white w-full"
                   disabled={loading}
                 >
                   {loading ? (
